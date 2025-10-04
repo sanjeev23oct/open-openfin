@@ -7,18 +7,6 @@ const { app, BrowserWindow, ipcMain, Tray, Menu, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-// Platform state
-class PlatformState {
-  constructor() {
-    this.launcherWindow = null;
-    this.appWindows = new Map();
-    this.fdc3Bus = new SimpleFDC3Bus();
-    this.tray = null;
-  }
-}
-
-const platform = new PlatformState();
-
 // Simple FDC3 message bus
 class SimpleFDC3Bus {
   constructor() {
@@ -68,6 +56,18 @@ class SimpleFDC3Bus {
     return apps;
   }
 }
+
+// Platform state
+class PlatformState {
+  constructor() {
+    this.launcherWindow = null;
+    this.appWindows = new Map();
+    this.fdc3Bus = new SimpleFDC3Bus();
+    this.tray = null;
+  }
+}
+
+const platform = new PlatformState();
 
 /**
  * Create the platform launcher window
