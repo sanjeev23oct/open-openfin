@@ -1,0 +1,63 @@
+{
+  "id": "sample-workspace-1",
+  "name": "FDC3 Sample Workspace",
+  "description": "A workspace demonstrating FDC3 context sharing and intent resolution between two sample applications",
+  "version": "1.0.0",
+  "applications": [
+    {
+      "appId": "sample-app-1",
+      "manifestUrl": "file:///apps/sample-app-1/manifest.json",
+      "autoLaunch": true,
+      "windowOptions": {
+        "defaultLeft": 100,
+        "defaultTop": 100,
+        "defaultWidth": 700,
+        "defaultHeight": 500
+      }
+    },
+    {
+      "appId": "sample-app-2",
+      "manifestUrl": "file:///apps/sample-app-2/manifest.json",
+      "autoLaunch": true,
+      "windowOptions": {
+        "defaultLeft": 850,
+        "defaultTop": 100,
+        "defaultWidth": 700,
+        "defaultHeight": 500
+      }
+    }
+  ],
+  "layout": {
+    "type": "side-by-side",
+    "windows": [
+      {
+        "appId": "sample-app-1",
+        "bounds": {
+          "x": 100,
+          "y": 100,
+          "width": 700,
+          "height": 500
+        },
+        "state": "normal"
+      },
+      {
+        "appId": "sample-app-2",
+        "bounds": {
+          "x": 850,
+          "y": 100,
+          "width": 700,
+          "height": 500
+        },
+        "state": "normal"
+      }
+    ]
+  },
+  "channels": {
+    "default": "red"
+  },
+  "metadata": {
+    "created": "2025-01-10T00:00:00Z",
+    "author": "Desktop Interop Platform",
+    "tags": ["fdc3", "sample", "demo"]
+  }
+}

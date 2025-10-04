@@ -1,0 +1,21 @@
+{
+  "name": "@desktop-interop/runtime",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc && npm run build:main && npm run build:preload",
+    "build:main": "esbuild src/main.ts --bundle --platform=node --outfile=dist/main.js --external:electron",
+    "build:preload": "esbuild src/preload.ts --bundle --platform=node --outfile=dist/preload.js --external:electron",
+    "dev": "tsc --watch",
+    "test": "jest"
+  },
+  "dependencies": {
+    "electron": "^28.1.0",
+    "ws": "^8.16.0",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.10"
+  }
+}

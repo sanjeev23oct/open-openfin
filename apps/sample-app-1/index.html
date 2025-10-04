@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sample App 1 - Broadcaster</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+    }
+    h1 {
+      margin-top: 0;
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+      box-sizing: border-box;
+      border: none;
+      border-radius: 5px;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    .status {
+      margin-top: 20px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📡 Sample App 1 - Broadcaster</h1>
+    <p>This app broadcasts FDC3 instrument context</p>
+    
+    <div>
+      <label>Ticker Symbol:</label>
+      <input type="text" id="ticker" value="AAPL" placeholder="Enter ticker symbol">
+    </div>
+    
+    <div>
+      <label>Company Name:</label>
+      <input type="text" id="name" value="Apple Inc." placeholder="Enter company name">
+    </div>
+    
+    <button onclick="broadcastInstrument()">Broadcast Instrument</button>
+    <button onclick="joinChannel('red')">Join Red Channel</button>
+    <button onclick="joinChannel('blue')">Join Blue Channel</button>
+    
+    <div class="status">
+      <strong>Status:</strong>
+      <div id="status">Ready</div>
+    </div>
+  </div>
+
+  <script>
+    let currentChannel = null;
+
+    async function broadcastInstrument() {
+      const ticker = document.getElementById('ticker').value;
+      const name = document.getElementById('name').value;
+      
+      if (!currentChannel) {
+        updateStatus('❌ Please join a channel first!');
+        return;
+      }
+      
+      const context = {
+        type: 'fdc3.instrument',
+        id: {
+          ticker: ticker
+        },
+        name: name
+      };
+      
+      try {
+        await window.fdc3.broadcast(context);
+        updateStatus(`✅ Broadcasted ${ticker} on ${currentChannel} channel`);
+      } catch (error) {
+        updateStatus(`❌ Error: ${error.message}`);
+      }
+    }
+    
+    async function joinChannel(channelId) {
+      try {
+        await window.fdc3.joinUserChannel(channelId);
+        currentChannel = channelId;
+        updateStatus(`✅ Joined ${channelId} channel`);
+      } catch (error) {
+        updateStatus(`❌ Error joining channel: ${error.message}`);
+      }
+    }
+    
+    function updateStatus(message) {
+      document.getElementById('status').innerHTML = message;
+    }
+    
+    // Initialize FDC3
+    async function initializeFDC3() {
+      if (!window.fdc3) {
+        updateStatus('❌ FDC3 API not available');
+        return;
+      }
+      
+      updateStatus('✅ FDC3 API available');
+      
+      // Register intent handler for ViewChart
+      try {
+        await window.fdc3.addIntentListener('ViewChart', (context) => {
+          updateStatus(`📊 ViewChart intent received for ${context.id?.ticker || 'unknown'}`);
+          
+          // Update UI with received context
+          if (context.type === 'fdc3.instrument') {
+            document.getElementById('ticker').value = context.id?.ticker || '';
+            document.getElementById('name').value = context.name || '';
+          }
+          
+          return {
+            type: 'fdc3.nothing'
+          };
+        });
+        console.log('ViewChart intent handler registered');
+      } catch (error) {
+        console.error('Error registering ViewChart intent:', error);
+      }
+      
+      // Register intent handler for ViewNews
+      try {
+        await window.fdc3.addIntentListener('ViewNews', (context) => {
+          updateStatus(`📰 ViewNews intent received for ${context.id?.ticker || 'unknown'}`);
+          
+          // Update UI with received context
+          if (context.type === 'fdc3.instrument') {
+            document.getElementById('ticker').value = context.id?.ticker || '';
+            document.getElementById('name').value = context.name || '';
+          }
+          
+          return {
+            type: 'fdc3.nothing'
+          };
+        });
+        console.log('ViewNews intent handler registered');
+      } catch (error) {
+        console.error('Error registering ViewNews intent:', error);
+      }
+      
+      // Listen for context on current channel
+      try {
+        await window.fdc3.addContextListener('fdc3.instrument', (context) => {
+          updateStatus(`🎯 Received context: ${context.id?.ticker || 'unknown'}`);
+          
+          // Update UI with received context
+          document.getElementById('ticker').value = context.id?.ticker || '';
+          document.getElementById('name').value = context.name || '';
+        });
+        console.log('Context listener registered');
+      } catch (error) {
+        console.error('Error registering context listener:', error);
+      }
+    }
+    
+    // Initialize when page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeFDC3);
+    } else {
+      initializeFDC3();
+    }
+  </script>
+</body>
+</html>

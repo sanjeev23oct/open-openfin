@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sample App 2 - Listener</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+    }
+    h1 {
+      margin-top: 0;
+    }
+    button {
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+      box-sizing: border-box;
+      border: none;
+      border-radius: 5px;
+      background: #2196F3;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #0b7dda;
+    }
+    .status {
+      margin-top: 20px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+    }
+    .received {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+      min-height: 100px;
+    }
+    .context-item {
+      padding: 10px;
+      margin: 5px 0;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 5px;
+      border-left: 4px solid #4CAF50;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📻 Sample App 2 - Listener</h1>
+    <p>This app listens for FDC3 instrument context</p>
+    
+    <div>
+      <strong>Channel Switching:</strong>
+      <button onclick="joinChannel('red')">Join Red Channel</button>
+      <button onclick="joinChannel('blue')">Join Blue Channel</button>
+      <button onclick="joinChannel('green')">Join Green Channel</button>
+      <button onclick="leaveChannel()">Leave Channel</button>
+    </div>
+    
+    <div style="margin-top: 20px;">
+      <strong>Raise Intents:</strong>
+      <button onclick="raiseViewChartIntent()">Raise ViewChart Intent</button>
+      <button onclick="raiseViewNewsIntent()">Raise ViewNews Intent</button>
+    </div>
+    
+    <div class="status">
+      <strong>Status:</strong>
+      <div id="status">Ready</div>
+    </div>
+    
+    <div class="received">
+      <strong>Received Contexts:</strong>
+      <div id="contexts">No contexts received yet</div>
+    </div>
+  </div>
+
+  <script>
+    let currentChannel = null;
+    let contextCount = 0;
+    let lastReceivedContext = null;
+
+    async function joinChannel(channelId) {
+      try {
+        await window.fdc3.joinUserChannel(channelId);
+        currentChannel = channelId;
+        updateStatus(`✅ Joined ${channelId} channel - listening for contexts...`);
+      } catch (error) {
+        updateStatus(`❌ Error joining channel: ${error.message}`);
+      }
+    }
+    
+    async function leaveChannel() {
+      try {
+        await window.fdc3.leaveCurrentChannel();
+        const previousChannel = currentChannel;
+        currentChannel = null;
+        updateStatus(`✅ Left ${previousChannel} channel`);
+      } catch (error) {
+        updateStatus(`❌ Error leaving channel: ${error.message}`);
+      }
+    }
+    
+    async function raiseViewChartIntent() {
+      if (!lastReceivedContext) {
+        updateStatus('❌ No context available. Please receive a context first.');
+        return;
+      }
+      
+      try {
+        const result = await window.fdc3.raiseIntent('ViewChart', lastReceivedContext);
+        updateStatus(`✅ ViewChart intent raised successfully`);
+        console.log('Intent result:', result);
+      } catch (error) {
+        updateStatus(`❌ Error raising ViewChart intent: ${error.message}`);
+      }
+    }
+    
+    async function raiseViewNewsIntent() {
+      if (!lastReceivedContext) {
+        updateStatus('❌ No context available. Please receive a context first.');
+        return;
+      }
+      
+      try {
+        const result = await window.fdc3.raiseIntent('ViewNews', lastReceivedContext);
+        updateStatus(`✅ ViewNews intent raised successfully`);
+        console.log('Intent result:', result);
+      } catch (error) {
+        updateStatus(`❌ Error raising ViewNews intent: ${error.message}`);
+      }
+    }
+    
+    function updateStatus(message) {
+      document.getElementById('status').innerHTML = message;
+    }
+    
+    function displayContext(context) {
+      contextCount++;
+      lastReceivedContext = context;
+      
+      const contextsDiv = document.getElementById('contexts');
+      
+      if (contextCount === 1) {
+        contextsDiv.innerHTML = '';
+      }
+      
+      const contextItem = document.createElement('div');
+      contextItem.className = 'context-item';
+      contextItem.innerHTML = `
+        <strong>#${contextCount} - ${new Date().toLocaleTimeString()}</strong><br>
+        Type: ${context.type}<br>
+        Ticker: ${context.id?.ticker || 'N/A'}<br>
+        Name: ${context.name || 'N/A'}
+      `;
+      
+      contextsDiv.insertBefore(contextItem, contextsDiv.firstChild);
+      
+      updateStatus(`✅ Received context on ${currentChannel || 'default'} channel`);
+    }
+    
+    // Initialize FDC3
+    async function initializeFDC3() {
+      if (!window.fdc3) {
+        updateStatus('❌ FDC3 API not available');
+        return;
+      }
+      
+      // Set up context listener
+      try {
+        await window.fdc3.addContextListener('fdc3.instrument', (context) => {
+          console.log('Received instrument context:', context);
+          displayContext(context);
+        });
+        
+        updateStatus('✅ FDC3 API available - Context listener registered');
+      } catch (error) {
+        updateStatus(`❌ Error setting up context listener: ${error.message}`);
+      }
+      
+      // Register intent handler for ViewNews
+      try {
+        await window.fdc3.addIntentListener('ViewNews', (context) => {
+          updateStatus(`📰 ViewNews intent received`);
+          displayContext(context);
+          
+          return {
+            type: 'fdc3.nothing'
+          };
+        });
+        console.log('ViewNews intent handler registered');
+      } catch (error) {
+        console.error('Error registering ViewNews intent:', error);
+      }
+    }
+    
+    // Initialize when page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeFDC3);
+    } else {
+      initializeFDC3();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+{
+  "startup_app": {
+    "uuid": "sample-app-1",
+    "name": "Sample App 1 - Broadcaster",
+    "url": "file:///apps/sample-app-1/index.html",
+    "autoShow": true,
+    "frame": true,
+    "defaultWidth": 700,
+    "defaultHeight": 500,
+    "defaultLeft": 100,
+    "defaultTop": 100,
+    "resizable": true,
+    "maximizable": true,
+    "minimizable": true
+  },
+  "runtime": {
+    "version": "0.1.0"
+  },
+  "permissions": {
+    "System": {
+      "clipboard": true,
+      "notifications": true
+    }
+  },
+  "fdc3": {
+    "intents": [
+      {
+        "name": "ViewChart",
+        "displayName": "View Chart",
+        "contexts": ["fdc3.instrument"]
+      },
+      {
+        "name": "ViewNews",
+        "displayName": "View News",
+        "contexts": ["fdc3.instrument"]
+      }
+    ]
+  }
+}

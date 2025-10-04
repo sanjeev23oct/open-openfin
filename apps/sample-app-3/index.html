@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sample App 3 - Chart Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+    }
+    h1 {
+      margin-top: 0;
+    }
+    button {
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+      box-sizing: border-box;
+      border: none;
+      border-radius: 5px;
+      background: #FF9800;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #F57C00;
+    }
+    .chart {
+      margin-top: 20px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+      min-height: 200px;
+      text-align: center;
+    }
+    .ticker-display {
+      font-size: 48px;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+    .status {
+      margin-top: 20px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📊 Sample App 3 - Chart Viewer</h1>
+    <p>This app displays charts for received instruments</p>
+    
+    <button onclick="joinChannel('red')">Join Red Channel</button>
+    <button onclick="joinChannel('blue')">Join Blue Channel</button>
+    
+    <div class="chart">
+      <div id="chart-content">
+        <p>📈 Waiting for instrument context...</p>
+        <p style="font-size: 12px;">Join a channel to receive data</p>
+      </div>
+    </div>
+    
+    <div class="status">
+      <strong>Status:</strong>
+      <div id="status">Ready</div>
+    </div>
+  </div>
+
+  <script>
+    let currentChannel = null;
+
+    async function joinChannel(channelId) {
+      try {
+        await window.fdc3.joinUserChannel(channelId);
+        currentChannel = channelId;
+        updateStatus(`✅ Joined ${channelId} channel - ready to display charts`);
+      } catch (error) {
+        updateStatus(`❌ Error joining channel: ${error.message}`);
+      }
+    }
+    
+    function updateStatus(message) {
+      document.getElementById('status').innerHTML = message;
+    }
+    
+    function displayChart(context) {
+      const chartContent = document.getElementById('chart-content');
+      
+      chartContent.innerHTML = `
+        <div class="ticker-display">${context.id?.ticker || 'N/A'}</div>
+        <h2>${context.name || 'Unknown Company'}</h2>
+        <p style="font-size: 24px;">📈 Chart would display here</p>
+        <p style="font-size: 12px;">Received at ${new Date().toLocaleTimeString()}</p>
+        <div style="margin-top: 20px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
+          <p>In a real app, this would show:</p>
+          <p>• Price chart</p>
+          <p>• Volume data</p>
+          <p>• Technical indicators</p>
+        </div>
+      `;
+      
+      updateStatus(`✅ Displaying chart for ${context.id?.ticker} on ${currentChannel} channel`);
+    }
+    
+    // Set up context listener
+    if (window.fdc3) {
+      window.fdc3.addContextListener('fdc3.instrument', (context) => {
+        console.log('Received instrument context:', context);
+        displayChart(context);
+      });
+      
+      updateStatus('✅ FDC3 API available - Ready to display charts');
+    } else {
+      updateStatus('❌ FDC3 API not available');
+    }
+  </script>
+</body>
+</html>

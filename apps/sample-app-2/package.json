@@ -1,0 +1,16 @@
+{
+  "name": "sample-app-2",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@desktop-interop/sdk": "^0.1.0",
+    "@desktop-interop/fdc3": "^0.1.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.10"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "startup_app": {
+    "uuid": "sample-app-3",
+    "name": "Sample App 3 - Chart Viewer",
+    "url": "file:///apps/sample-app-3/index.html",
+    "autoShow": true,
+    "frame": true,
+    "defaultWidth": 700,
+    "defaultHeight": 600,
+    "defaultLeft": 100,
+    "defaultTop": 650,
+    "resizable": true,
+    "maximizable": true,
+    "minimizable": true
+  },
+  "runtime": {
+    "version": "0.1.0"
+  },
+  "permissions": {
+    "System": {
+      "clipboard": true,
+      "notifications": true
+    }
+  },
+  "fdc3": {
+    "intents": [
+      {
+        "name": "ViewChart",
+        "displayName": "View Chart",
+        "contexts": ["fdc3.instrument"]
+      }
+    ]
+  }
+}
