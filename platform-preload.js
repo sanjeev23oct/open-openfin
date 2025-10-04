@@ -5,9 +5,14 @@ const { contextBridge, ipcRenderer } = require('electron');
  */
 
 contextBridge.exposeInMainWorld('platform', {
-  // Launch an application
+  // Launch an application from manifest file
   launchApp: async (manifestPath, appId) => {
     return ipcRenderer.invoke('platform:launch-app', manifestPath, appId);
+  },
+  
+  // Launch an application with inline manifest (for external apps)
+  launchAppWithManifest: async (appId, manifest) => {
+    return ipcRenderer.invoke('platform:launch-app-with-manifest', appId, manifest);
   },
   
   // Get running applications
@@ -23,6 +28,11 @@ contextBridge.exposeInMainWorld('platform', {
   // Focus an application
   focusApp: async (appId) => {
     return ipcRenderer.invoke('platform:focus-app', appId);
+  },
+  
+  // Set window bounds (position and size)
+  setWindowBounds: async (appId, bounds) => {
+    return ipcRenderer.invoke('platform:set-window-bounds', appId, bounds);
   },
   
   // Get channel information

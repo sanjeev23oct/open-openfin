@@ -54,6 +54,9 @@ npm run build
 ### Run Sample Applications
 
 ```bash
+# First time setup - create placeholder icons
+node create-icons.js
+
 # Launch the platform with sample workspace
 npm run start
 
@@ -61,6 +64,8 @@ npm run start
 npm run start:sample-app-1
 npm run start:sample-app-2
 ```
+
+**Note:** The `create-icons.js` script creates minimal placeholder icons. For production, replace `assets/icon.png` and `assets/tray-icon.png` with proper icon files.
 
 ### Your First Application
 

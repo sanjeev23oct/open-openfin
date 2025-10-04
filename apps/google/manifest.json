@@ -1,0 +1,32 @@
+{
+  "startup_app": {
+    "uuid": "com.google.search",
+    "name": "Google Search",
+    "url": "https://www.google.com",
+    "autoShow": true,
+    "frame": true,
+    "defaultWidth": 1024,
+    "defaultHeight": 768,
+    "defaultLeft": 150,
+    "defaultTop": 150,
+    "resizable": true,
+    "maximizable": true,
+    "minimizable": true
+  },
+  "runtime": {
+    "version": "0.1.0"
+  },
+  "permissions": {
+    "System": {
+      "clipboard": true,
+      "notifications": true
+    },
+    "Network": {
+      "domains": [
+        "https://*.google.com",
+        "https://*.gstatic.com",
+        "https://*.googleapis.com"
+      ]
+    }
+  }
+}

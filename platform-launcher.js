@@ -76,7 +76,7 @@ function createLauncherWindow() {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width, height } = primaryDisplay.workAreaSize;
   
-  platform.launcherWindow = new BrowserWindow({
+  const windowOptions = {
     width: 900,
     height: 700,
     x: Math.floor((width - 900) / 2),
@@ -86,11 +86,19 @@ function createLauncherWindow() {
       contextIsolation: true,
       nodeIntegration: false
     },
-    title: 'Desktop Interop Platform',
-    icon: path.join(__dirname, 'assets', 'icon.png')
-  });
+    title: 'Desktop Interop Platform'
+  };
   
-  platform.launcherWindow.loadFile('platform-ui/launcher.html');
+  // Add icon if it exists
+  const iconPath = path.join(__dirname, 'assets', 'icon.png');
+  if (fs.existsSync(iconPath)) {
+    windowOptions.icon = iconPath;
+  }
+  
+  platform.launcherWindow = new BrowserWindow(windowOptions);
+  
+  // Use enhanced launcher with UI for adding apps and workspaces
+  platform.launcherWindow.loadFile('platform-ui/launcher-enhanced.html');
   
   // Don't close app when launcher closes, just hide it
   platform.launcherWindow.on('close', (event) => {
@@ -106,9 +114,34 @@ function createLauncherWindow() {
  */
 function createSystemTray() {
   // Create a simple icon (in production, use actual icon file)
-  platform.tray = new Tray(path.join(__dirname, 'assets', 'tray-icon.png'));
+  const iconPath = path.join(__dirname, 'assets', 'tray-icon.png');
+  
+  // Check if icon exists, if not, use nativeImage to create a simple one
+  let trayIcon;
+  if (fs.existsSync(iconPath)) {
+    trayIcon = iconPath;
+  } else {
+    // Create a simple colored square as fallback
+    const { nativeImage } = require('electron');
+    trayIcon = nativeImage.createEmpty();
+  }
+  
+  try {
+    platform.tray = new Tray(trayIcon);
+  } catch (error) {
+    console.warn('Could not create system tray icon:', error.message);
+    // Continue without tray icon
+    return;
+  }
+  
+  if (!platform.tray) {
+    console.log('⚠️  System tray not available (icon missing)');
+    return;
+  }
   
   const updateTrayMenu = () => {
+    if (!platform.tray) return;
+    
     const runningApps = Array.from(platform.appWindows.entries());
     
     const contextMenu = Menu.buildFromTemplate([
@@ -202,9 +235,73 @@ function launchApplication(manifestPath, appId) {
     }
   });
   
-  // Load app
-  const htmlPath = startupApp.url.replace('file:///', '');
-  window.loadFile(htmlPath);
+  // Load app - check if it's a URL or file path
+  if (startupApp.url.startsWith('http://') || startupApp.url.startsWith('https://')) {
+    // External URL - use loadURL
+    window.loadURL(startupApp.url);
+  } else {
+    // Local file - use loadFile
+    const htmlPath = startupApp.url.replace('file:///', '');
+    window.loadFile(htmlPath);
+  }
+  
+  // Notify launcher
+  if (platform.launcherWindow) {
+    platform.launcherWindow.webContents.send('app-launched', {
+      appId,
+      name: startupApp.name
+    });
+  }
+  
+  return window;
+}
+
+/**
+ * Launch application with inline manifest
+ */
+function launchApplicationWithManifest(manifest, appId) {
+  // Check if already running
+  if (platform.appWindows.has(appId)) {
+    const window = platform.appWindows.get(appId);
+    window.show();
+    window.focus();
+    return window;
+  }
+  
+  const startupApp = manifest.startup_app;
+  
+  const window = new BrowserWindow({
+    width: startupApp.defaultWidth || 800,
+    height: startupApp.defaultHeight || 600,
+    x: startupApp.defaultLeft,
+    y: startupApp.defaultTop,
+    webPreferences: {
+      preload: path.join(__dirname, 'test-preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false
+    },
+    title: startupApp.name,
+    show: startupApp.autoShow !== false
+  });
+  
+  // Register with FDC3 bus
+  platform.fdc3Bus.registerWindow(window, window.id, appId);
+  
+  // Track window
+  platform.appWindows.set(appId, window);
+  
+  // Handle window close
+  window.on('closed', () => {
+    platform.appWindows.delete(appId);
+    platform.fdc3Bus.windows.delete(window.id);
+    
+    if (platform.launcherWindow) {
+      platform.launcherWindow.webContents.send('app-closed', appId);
+    }
+  });
+  
+  // Load URL directly
+  window.loadURL(startupApp.url);
   
   // Notify launcher
   if (platform.launcherWindow) {
@@ -221,9 +318,15 @@ function launchApplication(manifestPath, appId) {
  * Set up IPC handlers
  */
 function setupIPC() {
-  // Launch app from launcher
+  // Launch app from launcher (file-based manifest)
   ipcMain.handle('platform:launch-app', async (event, manifestPath, appId) => {
     launchApplication(manifestPath, appId);
+    return { success: true };
+  });
+  
+  // Launch app with inline manifest
+  ipcMain.handle('platform:launch-app-with-manifest', async (event, appId, manifest) => {
+    launchApplicationWithManifest(manifest, appId);
     return { success: true };
   });
   
@@ -249,6 +352,28 @@ function setupIPC() {
       window.focus();
     }
     return { success: true };
+  });
+  
+  // Set window bounds (position and size)
+  ipcMain.handle('platform:set-window-bounds', async (event, appId, bounds) => {
+    const window = platform.appWindows.get(appId);
+    if (window) {
+      try {
+        // Set bounds with animation
+        window.setBounds({
+          x: Math.floor(bounds.x),
+          y: Math.floor(bounds.y),
+          width: Math.floor(bounds.width),
+          height: Math.floor(bounds.height)
+        }, true); // true = animate
+        
+        return { success: true };
+      } catch (error) {
+        console.error('Failed to set window bounds:', error);
+        return { success: false, error: error.message };
+      }
+    }
+    return { success: false, error: 'Window not found' };
   });
   
   // FDC3 handlers

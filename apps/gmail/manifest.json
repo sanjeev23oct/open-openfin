@@ -1,0 +1,32 @@
+{
+  "startup_app": {
+    "uuid": "com.google.gmail",
+    "name": "Gmail",
+    "url": "https://mail.google.com",
+    "autoShow": true,
+    "frame": true,
+    "defaultWidth": 1200,
+    "defaultHeight": 800,
+    "defaultLeft": 100,
+    "defaultTop": 100,
+    "resizable": true,
+    "maximizable": true,
+    "minimizable": true
+  },
+  "runtime": {
+    "version": "0.1.0"
+  },
+  "permissions": {
+    "System": {
+      "clipboard": true,
+      "notifications": true
+    },
+    "Network": {
+      "domains": [
+        "https://*.google.com",
+        "https://*.gstatic.com",
+        "https://*.googleapis.com"
+      ]
+    }
+  }
+}
