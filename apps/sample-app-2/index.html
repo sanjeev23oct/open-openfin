@@ -3,87 +3,243 @@
 <head>
   <title>Sample App 2 - Listener</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
     body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
       color: white;
+      min-height: 100vh;
+      padding: 20px;
     }
+    
     .container {
-      max-width: 600px;
+      max-width: 700px;
       margin: 0 auto;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 30px;
-      border-radius: 10px;
-      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.15);
+      padding: 40px;
+      border-radius: 20px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .icon {
+      font-size: 64px;
+      margin-bottom: 10px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
     h1 {
-      margin-top: 0;
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 5px;
     }
+    
+    .subtitle {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    .section {
+      margin-bottom: 25px;
+    }
+    
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.7;
+      margin-bottom: 12px;
+    }
+    
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    
     button {
-      padding: 10px;
-      margin: 5px 0;
-      width: 100%;
-      box-sizing: border-box;
+      padding: 12px 16px;
       border: none;
-      border-radius: 5px;
-      background: #2196F3;
-      color: white;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
-      font-size: 16px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
-    button:hover {
-      background: #0b7dda;
-    }
-    .status {
-      margin-top: 20px;
-      padding: 10px;
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 5px;
-    }
-    .received {
-      margin-top: 20px;
-      padding: 15px;
+    
+    .btn-channel {
       background: rgba(255, 255, 255, 0.2);
-      border-radius: 5px;
-      min-height: 100px;
+      color: white;
     }
-    .context-item {
-      padding: 10px;
-      margin: 5px 0;
+    
+    .btn-channel:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+    
+    .btn-channel.red { border-left: 4px solid #f44336; }
+    .btn-channel.blue { border-left: 4px solid #2196F3; }
+    .btn-channel.green { border-left: 4px solid #4CAF50; }
+    .btn-channel.leave { border-left: 4px solid #ff9800; }
+    
+    .btn-intent {
+      background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+      color: white;
+    }
+    
+    .btn-intent:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+    }
+    
+    .status {
+      padding: 16px;
       background: rgba(0, 0, 0, 0.3);
-      border-radius: 5px;
+      border-radius: 10px;
       border-left: 4px solid #4CAF50;
+      margin-bottom: 20px;
+    }
+    
+    .status-label {
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.7;
+      margin-bottom: 5px;
+    }
+    
+    .received {
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      min-height: 150px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .received::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .received::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+    }
+    
+    .received::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+    }
+    
+    .context-item {
+      padding: 15px;
+      margin-bottom: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      border-left: 4px solid #4CAF50;
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    .context-header {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .context-time {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+    
+    .context-data {
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      opacity: 0.5;
+    }
+    
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>📻 Sample App 2 - Listener</h1>
-    <p>This app listens for FDC3 instrument context</p>
-    
-    <div>
-      <strong>Channel Switching:</strong>
-      <button onclick="joinChannel('red')">Join Red Channel</button>
-      <button onclick="joinChannel('blue')">Join Blue Channel</button>
-      <button onclick="joinChannel('green')">Join Green Channel</button>
-      <button onclick="leaveChannel()">Leave Channel</button>
-    </div>
-    
-    <div style="margin-top: 20px;">
-      <strong>Raise Intents:</strong>
-      <button onclick="raiseViewChartIntent()">Raise ViewChart Intent</button>
-      <button onclick="raiseViewNewsIntent()">Raise ViewNews Intent</button>
+    <div class="header">
+      <div class="icon">📻</div>
+      <h1>FDC3 Listener</h1>
+      <p class="subtitle">Listen for context broadcasts and raise intents</p>
     </div>
     
     <div class="status">
-      <strong>Status:</strong>
-      <div id="status">Ready</div>
+      <div class="status-label">Status</div>
+      <div id="status">Waiting for context...</div>
     </div>
     
-    <div class="received">
-      <strong>Received Contexts:</strong>
-      <div id="contexts">No contexts received yet</div>
+    <div class="section">
+      <div class="section-title">Channel Management</div>
+      <div class="button-grid">
+        <button class="btn-channel red" onclick="joinChannel('red')">🔴 Red</button>
+        <button class="btn-channel blue" onclick="joinChannel('blue')">🔵 Blue</button>
+        <button class="btn-channel green" onclick="joinChannel('green')">🟢 Green</button>
+        <button class="btn-channel leave" onclick="leaveChannel()">🚪 Leave</button>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Raise Intents</div>
+      <div class="button-grid">
+        <button class="btn-intent" onclick="raiseViewChartIntent()">📊 View Chart</button>
+        <button class="btn-intent" onclick="raiseViewNewsIntent()">📰 View News</button>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Received Contexts</div>
+      <div class="received" id="contexts">
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <div>No contexts received yet</div>
+          <div style="font-size: 12px; margin-top: 5px;">Join a channel to start receiving</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -160,13 +316,23 @@
       const contextItem = document.createElement('div');
       contextItem.className = 'context-item';
       contextItem.innerHTML = `
-        <strong>#${contextCount} - ${new Date().toLocaleTimeString()}</strong><br>
-        Type: ${context.type}<br>
-        Ticker: ${context.id?.ticker || 'N/A'}<br>
-        Name: ${context.name || 'N/A'}
+        <div class="context-header">
+          <span>#${contextCount}</span>
+          <span class="context-time">${new Date().toLocaleTimeString()}</span>
+        </div>
+        <div class="context-data">
+          <strong>Type:</strong> ${context.type}<br>
+          <strong>Ticker:</strong> ${context.id?.ticker || 'N/A'}<br>
+          <strong>Name:</strong> ${context.name || 'N/A'}
+        </div>
       `;
       
       contextsDiv.insertBefore(contextItem, contextsDiv.firstChild);
+      
+      // Keep only last 10 contexts
+      while (contextsDiv.children.length > 10) {
+        contextsDiv.removeChild(contextsDiv.lastChild);
+      }
       
       updateStatus(`✅ Received context on ${currentChannel || 'default'} channel`);
     }

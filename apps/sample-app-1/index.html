@@ -3,70 +3,217 @@
 <head>
   <title>Sample App 1 - Broadcaster</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
     body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
+    
     .container {
       max-width: 600px;
-      margin: 0 auto;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 30px;
-      border-radius: 10px;
-      backdrop-filter: blur(10px);
-    }
-    h1 {
-      margin-top: 0;
-    }
-    input, button {
-      padding: 10px;
-      margin: 5px 0;
       width: 100%;
-      box-sizing: border-box;
-      border: none;
-      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 40px;
+      border-radius: 20px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
-    button {
-      background: #4CAF50;
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .icon {
+      font-size: 64px;
+      margin-bottom: 10px;
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    
+    .subtitle {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    
+    input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
       color: white;
-      cursor: pointer;
       font-size: 16px;
+      transition: all 0.3s;
     }
-    button:hover {
-      background: #45a049;
+    
+    input:focus {
+      outline: none;
+      border-color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.15);
     }
+    
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .button-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 25px;
+    }
+    
+    button {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+      color: white;
+      grid-column: 1 / -1;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+    
+    .btn-channel {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 14px;
+    }
+    
+    .btn-channel:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+    
+    .btn-channel.red { border-left: 4px solid #f44336; }
+    .btn-channel.blue { border-left: 4px solid #2196F3; }
+    .btn-channel.green { border-left: 4px solid #4CAF50; }
+    
     .status {
-      margin-top: 20px;
-      padding: 10px;
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 5px;
+      margin-top: 25px;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      border-left: 4px solid #4CAF50;
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .status-label {
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.7;
+      margin-bottom: 5px;
+    }
+    
+    #status {
+      font-size: 15px;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(76, 175, 80, 0.3);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>📡 Sample App 1 - Broadcaster</h1>
-    <p>This app broadcasts FDC3 instrument context</p>
-    
-    <div>
-      <label>Ticker Symbol:</label>
-      <input type="text" id="ticker" value="AAPL" placeholder="Enter ticker symbol">
+    <div class="header">
+      <div class="icon">📡</div>
+      <h1>FDC3 Broadcaster</h1>
+      <p class="subtitle">Broadcast instrument context to other applications</p>
     </div>
     
-    <div>
-      <label>Company Name:</label>
-      <input type="text" id="name" value="Apple Inc." placeholder="Enter company name">
+    <div class="form-group">
+      <label>Ticker Symbol</label>
+      <input type="text" id="ticker" value="AAPL" placeholder="e.g., AAPL, GOOGL, MSFT">
     </div>
     
-    <button onclick="broadcastInstrument()">Broadcast Instrument</button>
-    <button onclick="joinChannel('red')">Join Red Channel</button>
-    <button onclick="joinChannel('blue')">Join Blue Channel</button>
+    <div class="form-group">
+      <label>Company Name</label>
+      <input type="text" id="name" value="Apple Inc." placeholder="e.g., Apple Inc.">
+    </div>
+    
+    <button class="btn-primary" onclick="broadcastInstrument()">
+      📤 Broadcast Instrument
+    </button>
+    
+    <div class="button-group">
+      <button class="btn-channel red" onclick="joinChannel('red')">🔴 Red Channel</button>
+      <button class="btn-channel blue" onclick="joinChannel('blue')">🔵 Blue Channel</button>
+      <button class="btn-channel green" onclick="joinChannel('green')">🟢 Green Channel</button>
+    </div>
     
     <div class="status">
-      <strong>Status:</strong>
-      <div id="status">Ready</div>
+      <div class="status-label">Status</div>
+      <div id="status">Ready to broadcast</div>
     </div>
   </div>
 

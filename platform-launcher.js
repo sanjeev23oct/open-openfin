@@ -6,6 +6,22 @@
 const { app, BrowserWindow, ipcMain, Tray, Menu, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
+
+// Configure app paths to avoid cache permission errors
+const userDataPath = path.join(os.homedir(), '.desktop-interop-platform');
+app.setPath('userData', userDataPath);
+app.setPath('cache', path.join(userDataPath, 'cache'));
+app.setPath('sessionData', path.join(userDataPath, 'session'));
+
+// Ensure directories exist
+if (!fs.existsSync(userDataPath)) {
+  fs.mkdirSync(userDataPath, { recursive: true });
+}
+
+// Disable GPU cache errors in development
+app.commandLine.appendSwitch('disable-gpu-shader-disk-cache');
+app.commandLine.appendSwitch('disable-http-cache');
 
 // Simple FDC3 message bus
 class SimpleFDC3Bus {

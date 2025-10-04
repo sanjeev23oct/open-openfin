@@ -29,7 +29,31 @@ An open-source desktop interoperability platform that enables seamless communica
 - [Community](#community)
 - [License](#license)
 
-## ⚡ Quick Start
+## 📥 Download
+
+### For End Users (No Installation Required)
+
+**Download pre-built executables:**
+
+#### Windows
+- [Download Installer (.exe)](https://github.com/sanjeev23oct/open-openfin/releases/latest) - Recommended
+- [Download Portable (.exe)](https://github.com/sanjeev23oct/open-openfin/releases/latest) - No installation needed
+
+#### macOS
+- [Download DMG](https://github.com/sanjeev23oct/open-openfin/releases/latest)
+
+#### Linux
+- [Download AppImage](https://github.com/sanjeev23oct/open-openfin/releases/latest)
+- [Download .deb](https://github.com/sanjeev23oct/open-openfin/releases/latest) - For Debian/Ubuntu
+
+**Quick Start:**
+1. Download for your platform
+2. Install/Run the application
+3. Click "Add App" to add Gmail, Slack, etc.
+4. Create workspaces to organize apps
+5. Done! 🎉
+
+## ⚡ Quick Start (For Developers)
 
 ### Prerequisites
 
@@ -37,7 +61,7 @@ An open-source desktop interoperability platform that enables seamless communica
 - **npm** or **yarn**
 - **Git**
 
-### Installation
+### Installation from Source
 
 ```bash
 # Clone the repository
@@ -47,23 +71,41 @@ cd open-openfin
 # Install dependencies
 npm install
 
+# Create placeholder icons
+node create-icons.js
+
 # Build all packages
 npm run build
 ```
 
-### Run Sample Applications
+### Run from Source
 
 ```bash
-# First time setup - create placeholder icons
-node create-icons.js
+# Launch the platform
+npm start
 
-# Launch the platform with sample workspace
-npm run start
-
-# Or launch individual sample apps
+# Or launch with sample workspace
 npm run start:sample-app-1
 npm run start:sample-app-2
 ```
+
+### Build Executables
+
+```bash
+# Build for Windows
+npm run build:exe
+
+# Build for macOS
+npm run build:mac
+
+# Build for Linux
+npm run build:linux
+
+# Build for all platforms
+npm run build:all
+```
+
+Executables will be in the `dist/` folder.
 
 **Note:** The `create-icons.js` script creates minimal placeholder icons. For production, replace `assets/icon.png` and `assets/tray-icon.png` with proper icon files.
 
