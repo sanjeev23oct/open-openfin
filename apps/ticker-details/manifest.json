@@ -1,0 +1,25 @@
+{
+  "startup_app": {
+    "name": "Ticker Details",
+    "description": "Comprehensive stock ticker details with charts and analytics",
+    "url": "file:///apps/ticker-details/index.html",
+    "uuid": "ticker-details-app",
+    "autoShow": true,
+    "defaultWidth": 1000,
+    "defaultHeight": 800,
+    "defaultLeft": 1050,
+    "defaultTop": 100,
+    "frame": true,
+    "resizable": true,
+    "maximizable": true,
+    "minimizable": true
+  },
+  "shortcut": {
+    "icon": "https://cdn-icons-png.flaticon.com/512/2920/2920231.png",
+    "name": "Ticker Details"
+  },
+  "platform": {
+    "uuid": "desktop-interop-platform",
+    "name": "Desktop Interop Platform"
+  }
+}

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desktop Interop Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0078d4',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .app-card {
+      animation: slideUp 0.4s ease-out;
+    }
+    .app-card:hover {
+      transform: translateY(-4px);
+      transition: transform 0.2s;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 text-white min-h-screen">
+  <!-- Header -->
+  <div class="bg-black/20 backdrop-blur-md border-b border-white/10">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold">Desktop Interop Platform</h1>
+            <p class="text-sm text-blue-200">Enterprise Application Launcher</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-3">
+          <div class="bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm">
+            <span class="text-sm"><span id="runningCount">0</span> apps running</span>
+          </div>
+          <button onclick="minimizeLauncher()" class="bg-white/10 hover:bg-white/20 p-2 rounded-lg transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="container mx-auto px-6 py-6">
+    <div class="relative max-w-2xl mx-auto">
+      <input 
+        type="text" 
+        id="searchInput"
+        placeholder="Search applications..." 
+        class="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-6 py-4 pl-14 text-lg focus:outline-none focus:border-blue-400 transition placeholder-blue-200"
+        onkeyup="filterApps()"
+      >
+      <svg class="w-6 h-6 text-blue-200 absolute left-5 top-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="container mx-auto px-6 mb-6">
+    <div class="flex space-x-2 bg-white/10 backdrop-blur-md rounded-xl p-1 max-w-md">
+      <button onclick="showTab('all')" id="tab-all" class="flex-1 px-4 py-2 rounded-lg bg-white/20 font-medium transition">
+        All Apps
+      </button>
+      <button onclick="showTab('running')" id="tab-running" class="flex-1 px-4 py-2 rounded-lg hover:bg-white/10 font-medium transition">
+        Running
+      </button>
+      <button onclick="showTab('favorites')" id="tab-favorites" class="flex-1 px-4 py-2 rounded-lg hover:bg-white/10 font-medium transition">
+        Favorites
+      </button>
+    </div>
+  </div>
+
+  <!-- App Grid -->
+  <div class="container mx-auto px-6 pb-6">
+    <div id="appGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <!-- Apps will be inserted here -->
+    </div>
+
+    <div id="emptyState" class="text-center py-12 hidden">
+      <div class="text-6xl mb-4">🔍</div>
+      <p class="text-xl text-blue-200">No applications found</p>
+    </div>
+  </div>
+
+  <!-- Add App Button -->
+  <button onclick="showAddAppDialog()" class="fixed bottom-8 right-8 w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full shadow-2xl hover:scale-110 transition flex items-center justify-center">
+    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+    </svg>
+  </button>
+
+  <!-- Add App Dialog -->
+  <div id="addAppDialog" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50" onclick="if(event.target === this) hideAddAppDialog()">
+    <div class="bg-gray-900 rounded-2xl p-8 max-w-md w-full mx-4 border border-white/10">
+      <h2 class="text-2xl font-bold mb-6">Add New Application</h2>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-2">Application Name</label>
+          <input type="text" id="newAppName" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-400">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Manifest URL</label>
+          <input type="text" id="newAppUrl" placeholder="https://example.com/manifest.json" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-400">
+        </div>
+        <div class="flex space-x-3 pt-4">
+          <button onclick="addCustomApp()" class="flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-medium transition">
+            Add App
+          </button>
+          <button onclick="hideAddAppDialog()" class="flex-1 bg-white/10 hover:bg-white/20 py-3 rounded-lg font-medium transition">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    
+    const builtInApps = [
+      {
+        id: 'ticker-list',
+        name: 'Market Watch',
+        description: 'Real-time stock ticker list',
+        icon: '📈',
+        manifestPath: 'apps/ticker-list/manifest.json',
+        category: 'Finance'
+      },
+      {
+        id: 'ticker-details',
+        name: 'Ticker Details',
+        description: 'Comprehensive stock analysis',
+        icon: '📊',
+        manifestPath: 'apps/ticker-details/manifest.json',
+        category: 'Finance'
+      },
+      {
+        id: 'sample-app-1',
+        name: 'Sample App 1',
+        description: 'FDC3 demonstration app',
+        icon: '🎯',
+        manifestPath: 'apps/sample-app-1/manifest.json',
+        category: 'Demo'
+      },
+      {
+        id: 'sample-app-2',
+        name: 'Sample App 2',
+        description: 'FDC3 demonstration app',
+        icon: '🎨',
+        manifestPath: 'apps/sample-app-2/manifest.json',
+        category: 'Demo'
+      },
+      {
+        id: 'sample-app-3',
+        name: 'Sample App 3',
+        description: 'FDC3 demonstration app',
+        icon: '🚀',
+        manifestPath: 'apps/sample-app-3/manifest.json',
+        category: 'Demo'
+      }
+    ];
+
+    let runningApps = new Set();
+    let favoriteApps = new Set(JSON.parse(localStorage.getItem('favoriteApps') || '[]'));
+    let customApps = JSON.parse(localStorage.getItem('customApps') || '[]');
+    let currentTab = 'all';
+
+    function renderApps() {
+      const allApps = [...builtInApps, ...customApps];
+      let filteredApps = allApps;
+
+      if (currentTab === 'running') {
+        filteredApps = allApps.filter(app => runningApps.has(app.id));
+      } else if (currentTab === 'favorites') {
+        filteredApps = allApps.filter(app => favoriteApps.has(app.id));
+      }
+
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      if (search) {
+        filteredApps = filteredApps.filter(app => 
+          app.name.toLowerCase().includes(search) || 
+          app.description.toLowerCase().includes(search)
+        );
+      }
+
+      const grid = document.getElementById('appGrid');
+      const emptyState = document.getElementById('emptyState');
+
+      if (filteredApps.length === 0) {
+        grid.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      grid.classList.remove('hidden');
+      emptyState.classList.add('hidden');
+
+      grid.innerHTML = filteredApps.map(app => {
+        const isRunning = runningApps.has(app.id);
+        const isFavorite = favoriteApps.has(app.id);
+        
+        return `
+          <div class="app-card bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 hover:border-blue-400 transition cursor-pointer relative group">
+            <button onclick="event.stopPropagation(); toggleFavorite('${app.id}')" class="absolute top-4 right-4 text-2xl opacity-0 group-hover:opacity-100 transition">
+              ${isFavorite ? '⭐' : '☆'}
+            </button>
+            <div class="text-5xl mb-4">${app.icon}</div>
+            <h3 class="text-xl font-bold mb-2">${app.name}</h3>
+            <p class="text-sm text-blue-200 mb-4">${app.description}</p>
+            <div class="flex items-center justify-between">
+              <span class="text-xs bg-white/20 px-3 py-1 rounded-full">${app.category || 'App'}</span>
+              ${isRunning ? 
+                `<button onclick="focusApp('${app.id}')" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-2">
+                  <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                  <span>Focus</span>
+                </button>` :
+                `<button onclick="launchApp('${app.id}', '${app.manifestPath}')" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition">
+                  Launch
+                </button>`
+              }
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('runningCount').textContent = runningApps.size;
+    }
+
+    async function launchApp(appId, manifestPath) {
+      try {
+        await ipcRenderer.invoke('platform:launch-app', manifestPath, appId);
+        runningApps.add(appId);
+        renderApps();
+      } catch (error) {
+        console.error('Failed to launch app:', error);
+        alert('Failed to launch application');
+      }
+    }
+
+    async function focusApp(appId) {
+      try {
+        await ipcRenderer.invoke('platform:focus-app', appId);
+      } catch (error) {
+        console.error('Failed to focus app:', error);
+      }
+    }
+
+    function toggleFavorite(appId) {
+      if (favoriteApps.has(appId)) {
+        favoriteApps.delete(appId);
+      } else {
+        favoriteApps.add(appId);
+      }
+      localStorage.setItem('favoriteApps', JSON.stringify([...favoriteApps]));
+      renderApps();
+    }
+
+    function showTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('[id^="tab-"]').forEach(btn => {
+        btn.classList.remove('bg-white/20');
+        btn.classList.add('hover:bg-white/10');
+      });
+      document.getElementById(`tab-${tab}`).classList.add('bg-white/20');
+      document.getElementById(`tab-${tab}`).classList.remove('hover:bg-white/10');
+      renderApps();
+    }
+
+    function filterApps() {
+      renderApps();
+    }
+
+    function showAddAppDialog() {
+      document.getElementById('addAppDialog').classList.remove('hidden');
+    }
+
+    function hideAddAppDialog() {
+      document.getElementById('addAppDialog').classList.add('hidden');
+      document.getElementById('newAppName').value = '';
+      document.getElementById('newAppUrl').value = '';
+    }
+
+    function addCustomApp() {
+      const name = document.getElementById('newAppName').value;
+      const url = document.getElementById('newAppUrl').value;
+      
+      if (!name || !url) {
+        alert('Please fill in all fields');
+        return;
+      }
+
+      const app = {
+        id: 'custom-' + Date.now(),
+        name,
+        description: 'Custom application',
+        icon: '📦',
+        manifestPath: url,
+        category: 'Custom'
+      };
+
+      customApps.push(app);
+      localStorage.setItem('customApps', JSON.stringify(customApps));
+      hideAddAppDialog();
+      renderApps();
+    }
+
+    async function minimizeLauncher() {
+      await ipcRenderer.invoke('platform:minimize-launcher');
+    }
+
+    // Listen for app closed events
+    ipcRenderer.on('app-closed', (event, appId) => {
+      runningApps.delete(appId);
+      renderApps();
+    });
+
+    ipcRenderer.on('app-launched', (event, data) => {
+      runningApps.add(data.appId);
+      renderApps();
+    });
+
+    // Initialize
+    renderApps();
+  </script>
+</body>
+</html>

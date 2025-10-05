@@ -114,8 +114,8 @@ function createLauncherWindow() {
   
   platform.launcherWindow = new BrowserWindow(windowOptions);
   
-  // Use enhanced launcher with UI for adding apps and workspaces
-  platform.launcherWindow.loadFile('platform-ui/launcher-enhanced.html');
+  // Use modern launcher with beautiful UI
+  platform.launcherWindow.loadFile('platform-ui/launcher-modern.html');
   
   // Don't close app when launcher closes, just hide it
   platform.launcherWindow.on('close', (event) => {

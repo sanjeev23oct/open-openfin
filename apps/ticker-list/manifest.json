@@ -1,0 +1,25 @@
+{
+  "startup_app": {
+    "name": "Market Watch - Ticker List",
+    "description": "Professional stock ticker list with FDC3 integration",
+    "url": "file:///apps/ticker-list/index.html",
+    "uuid": "ticker-list-app",
+    "autoShow": true,
+    "defaultWidth": 900,
+    "defaultHeight": 700,
+    "defaultLeft": 100,
+    "defaultTop": 100,
+    "frame": true,
+    "resizable": true,
+    "maximizable": true,
+    "minimizable": true
+  },
+  "shortcut": {
+    "icon": "https://cdn-icons-png.flaticon.com/512/2920/2920277.png",
+    "name": "Market Watch"
+  },
+  "platform": {
+    "uuid": "desktop-interop-platform",
+    "name": "Desktop Interop Platform"
+  }
+}
