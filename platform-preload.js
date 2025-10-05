@@ -35,6 +35,11 @@ contextBridge.exposeInMainWorld('platform', {
     return ipcRenderer.invoke('platform:set-window-bounds', appId, bounds);
   },
   
+  // Minimize launcher window
+  minimizeLauncher: async () => {
+    return ipcRenderer.invoke('platform:minimize-launcher');
+  },
+  
   // Get channel information
   getChannelInfo: async (channelId) => {
     return ipcRenderer.invoke('platform:get-channel-info', channelId);

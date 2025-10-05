@@ -1,4 +1,4 @@
-import { WorkspaceConfig, Workspace, WorkspaceSnapshot } from '@desktop-interop/sdk';
+import { WorkspaceConfig, WorkspaceSnapshot, Workspace } from '@desktop-interop/sdk';
 
 /**
  * Workspace implementation

@@ -60,16 +60,4 @@ export interface WindowOptions {
   preload?: string;
 }
 
-/**
- * Window group configuration
- */
-export interface WindowGroup {
-  id: string;
-  windows: string[];
-  leader?: string;
-}
 
-/**
- * Docking edge options
- */
-export type DockEdge = 'top' | 'right' | 'bottom' | 'left';

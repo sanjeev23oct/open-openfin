@@ -822,6 +822,11 @@
       const workspace = workspaces[index];
       const appCount = workspace.apps.length;
       
+      // Minimize launcher window to get out of the way
+      if (window.platform && window.platform.minimizeLauncher) {
+        await window.platform.minimizeLauncher();
+      }
+      
       // Calculate layout based on number of apps
       const layout = calculateLayout(appCount);
       
@@ -848,7 +853,8 @@
         await new Promise(resolve => setTimeout(resolve, 200));
       }
       
-      alert(`✅ Workspace "${workspace.name}" launched with ${appCount} apps!`);
+      // Show success notification (non-blocking)
+      console.log(`✅ Workspace "${workspace.name}" launched with ${appCount} apps!`);
     }
     
     // Calculate smart window layout

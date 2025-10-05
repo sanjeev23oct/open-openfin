@@ -15,7 +15,7 @@ export interface Identity {
  */
 export interface ApplicationInfo {
   identity: Identity;
-  manifest: ApplicationManifest;
+  manifest: any; // ApplicationManifest type - will be properly imported when needed
   parentUuid?: string;
   initialOptions?: any;
 }

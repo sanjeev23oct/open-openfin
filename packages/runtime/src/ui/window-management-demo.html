@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Window Management Demo</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #333;
+      margin-top: 0;
+    }
+    
+    .section {
+      margin: 20px 0;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 4px;
+    }
+    
+    .section h2 {
+      margin-top: 0;
+      color: #555;
+      font-size: 18px;
+    }
+    
+    button {
+      background: #0078d4;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 5px;
+    }
+    
+    button:hover {
+      background: #106ebe;
+    }
+    
+    button:active {
+      background: #005a9e;
+    }
+    
+    .info {
+      background: #e7f3ff;
+      border-left: 4px solid #0078d4;
+      padding: 12px;
+      margin: 10px 0;
+    }
+    
+    .window-list {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .window-item {
+      padding: 8px;
+      margin: 5px 0;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    
+    .status {
+      margin: 10px 0;
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🪟 Window Management Demo</h1>
+    
+    <div class="info">
+      <strong>Right-click anywhere</strong> to open the window management context menu!
+    </div>
+    
+    <div class="section">
+      <h2>Window Operations</h2>
+      <button onclick="showContextMenu()">Show Context Menu</button>
+      <button onclick="listWindows()">List All Windows</button>
+      <button onclick="listGroups()">List Groups</button>
+    </div>
+    
+    <div class="section">
+      <h2>Docking</h2>
+      <button onclick="dockLeft()">Dock Left</button>
+      <button onclick="dockRight()">Dock Right</button>
+      <button onclick="dockTop()">Dock Top</button>
+      <button onclick="dockBottom()">Dock Bottom</button>
+    </div>
+    
+    <div class="section">
+      <h2>Snapping</h2>
+      <button onclick="toggleSnapping()">Toggle Snapping</button>
+      <button onclick="checkSnapping()">Check Snapping Status</button>
+    </div>
+    
+    <div class="section">
+      <h2>Status</h2>
+      <div id="status" class="status">Ready</div>
+    </div>
+    
+    <div class="section">
+      <h2>Windows</h2>
+      <ul id="windowList" class="window-list"></ul>
+    </div>
+  </div>
+  
+  <script>
+    // Log status
+    function log(message) {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      console.log(message);
+    }
+    
+    // Show context menu
+    async function showContextMenu() {
+      try {
+        await window.windowManagement.showContextMenu();
+        log('Context menu shown');
+      } catch (error) {
+        log('Error: ' + error.message);
+      }
+    }
+    
+    // List all windows
+    async function listWindows() {
+      try {
+        const windows = await window.windowManagement.listWindows();
+        log(`Found ${windows.length} windows`);
+        
+        const list = document.getElementById('windowList');
+        list.innerHTML = '';
+        
+        windows.forEach(w => {
+          const li = document.createElement('li');
+          li.className = 'window-item';
+          li.textContent = `${w.title} (${w.id}) - ${w.state}`;
+          list.appendChild(li);
+        });
+      } catch (error) {
+        log('Error: ' + error.message);
+      }
+    }
+    
+    // List groups
+    async function listGroups() {
+      try {
+        const groups = await window.windowManagement.listGroups();
+        log(`Found ${groups.length} groups`);
+        console.log('Groups:', groups);
+      } catch (error) {
+        log('Error: ' + error.message);
+      }
+    }
+    
+    // Dock left
+    async function dockLeft() {
+      try {
+        const zones = await window.windowManagement.getDockZones();
+        const leftZone = zones.find(z => z.edge === 'left');
+        if (leftZone) {
+          // We don't have window ID here, so this is just a demo
+          log('Left dock zone found. Use context menu to dock.');
+        }
+      } catch (error) {
+        log('Error: ' + error.message);
+      }
+    }
+    
+    // Dock right
+    async function dockRight() {
+      log('Use context menu to dock windows');
+    }
+    
+    // Dock top
+    async function dockTop() {
+      log('Use context menu to dock windows');
+    }
+    
+    // Dock bottom
+    async function dockBottom() {
+      log('Use context menu to dock windows');
+    }
+    
+    // Toggle snapping
+    async function toggleSnapping() {
+      try {
+        const current = await window.windowManagement.isSnappingEnabled();
+        await window.windowManagement.enableSnapping(!current);
+        log(`Snapping ${!current ? 'enabled' : 'disabled'}`);
+      } catch (error) {
+        log('Error: ' + error.message);
+      }
+    }
+    
+    // Check snapping status
+    async function checkSnapping() {
+      try {
+        const enabled = await window.windowManagement.isSnappingEnabled();
+        log(`Snapping is ${enabled ? 'enabled' : 'disabled'}`);
+      } catch (error) {
+        log('Error: ' + error.message);
+      }
+    }
+    
+    // Listen for events
+    window.windowManagement.on('window-grouped', (data) => {
+      log('Window grouped: ' + JSON.stringify(data));
+    });
+    
+    window.windowManagement.on('window-docked', (data) => {
+      log('Window docked: ' + JSON.stringify(data));
+    });
+    
+    window.windowManagement.on('window-snapped', (data) => {
+      log('Window snapped: ' + JSON.stringify(data));
+    });
+    
+    // Right-click handler
+    document.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      showContextMenu();
+    });
+    
+    // Initial load
+    log('Window Management Demo Ready - Right-click to open context menu!');
+  </script>
+</body>
+</html>

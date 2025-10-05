@@ -118,3 +118,28 @@ export interface ApplicationSnapshotInfo {
   manifestUrl: string;
   state: string;
 }
+
+/**
+ * Workspace instance
+ */
+export interface Workspace {
+  /** Workspace ID */
+  id: string;
+  /** Workspace name */
+  name: string;
+  /** Applications in workspace */
+  applications: any[];
+  /** Layout configuration */
+  layout: any;
+  /** Current snapshot */
+  snapshot: WorkspaceSnapshot;
+  /** Optional description */
+  description?: string;
+  /** Optional metadata */
+  metadata?: Record<string, any>;
+  
+  /** Launch the workspace */
+  launch(): Promise<void>;
+  /** Save the workspace */
+  save(): Promise<void>;
+}

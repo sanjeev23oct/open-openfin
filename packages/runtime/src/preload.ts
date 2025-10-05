@@ -48,6 +48,71 @@ contextBridge.exposeInMainWorld('fdc3', {
   }
 });
 
+// Window Management API
+contextBridge.exposeInMainWorld('windowManagement', {
+  // Show context menu
+  showContextMenu: async () => {
+    return ipcRenderer.invoke('window:showContextMenu');
+  },
+  
+  // Grouping
+  createGroup: async (windowIds: string[]) => {
+    return ipcRenderer.invoke('window:createGroup', windowIds);
+  },
+  
+  addToGroup: async (windowId: string, groupId: string) => {
+    return ipcRenderer.invoke('window:addToGroup', windowId, groupId);
+  },
+  
+  removeFromGroup: async (windowId: string) => {
+    return ipcRenderer.invoke('window:removeFromGroup', windowId);
+  },
+  
+  getWindowGroup: async (windowId: string) => {
+    return ipcRenderer.invoke('window:getWindowGroup', windowId);
+  },
+  
+  listGroups: async () => {
+    return ipcRenderer.invoke('window:listGroups');
+  },
+  
+  // Docking
+  dockWindow: async (windowId: string, zone: any) => {
+    return ipcRenderer.invoke('window:dock', windowId, zone);
+  },
+  
+  undockWindow: async (windowId: string) => {
+    return ipcRenderer.invoke('window:undock', windowId);
+  },
+  
+  getDockZones: async () => {
+    return ipcRenderer.invoke('window:getDockZones');
+  },
+  
+  // Snapping
+  enableSnapping: async (enabled: boolean) => {
+    return ipcRenderer.invoke('window:enableSnapping', enabled);
+  },
+  
+  isSnappingEnabled: async () => {
+    return ipcRenderer.invoke('window:isSnappingEnabled');
+  },
+  
+  // List windows
+  listWindows: async () => {
+    return ipcRenderer.invoke('window:listWindows');
+  },
+  
+  // Events
+  on: (event: string, handler: (data: any) => void) => {
+    ipcRenderer.on(`window:${event}`, (_event, data) => handler(data));
+  },
+  
+  off: (event: string) => {
+    ipcRenderer.removeAllListeners(`window:${event}`);
+  }
+});
+
 // Simple fin API for identity
 contextBridge.exposeInMainWorld('fin', {
   me: {

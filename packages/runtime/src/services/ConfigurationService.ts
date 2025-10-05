@@ -1,4 +1,5 @@
 import * as fs from 'fs/promises';
+import * as fsSync from 'fs';
 import * as path from 'path';
 import { RuntimeConfig } from '@desktop-interop/sdk';
 import { IService } from './ServiceRegistry';
@@ -15,7 +16,7 @@ export class ConfigurationService implements IService {
   private config: RuntimeConfig;
   private configPath: string;
   private watchers: Map<string, Set<ConfigChangeCallback>> = new Map();
-  private fileWatcher?: fs.FSWatcher;
+  private fileWatcher?: fsSync.FSWatcher;
   
   constructor(configPath?: string) {
     this.configPath = configPath || path.join(process.cwd(), 'config.json');

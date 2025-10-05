@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline';">
+  <title>Overlay</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: transparent;
+    }
+    
+    #overlay-container {
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 120, 215, 0.3);
+      border: 2px solid rgba(0, 120, 215, 0.8);
+      border-radius: 4px;
+      opacity: 0;
+      transition: opacity 0.15s ease-out, background 0.15s ease-out, border-color 0.15s ease-out;
+      pointer-events: none;
+    }
+    
+    #overlay-container.visible {
+      opacity: 1;
+    }
+    
+    #overlay-container.highlighted {
+      background: rgba(0, 120, 215, 0.6);
+      border-color: rgba(0, 120, 215, 1);
+      box-shadow: 0 0 20px rgba(0, 120, 215, 0.5);
+    }
+    
+    /* Pulse animation for highlighted state */
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.02);
+      }
+    }
+    
+    #overlay-container.highlighted {
+      animation: pulse 1s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay-container"></div>
+  
+  <script>
+    const { ipcRenderer } = require('electron');
+    
+    const container = document.getElementById('overlay-container');
+    
+    // Listen for color changes
+    ipcRenderer.on('overlay:set-color', (event, color) => {
+      container.style.background = color;
+      
+      // Extract RGB values and create border color
+      const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+      if (match) {
+        const [, r, g, b, a] = match;
+        const alpha = a ? parseFloat(a) * 2 : 1;
+        container.style.borderColor = `rgba(${r}, ${g}, ${b}, ${Math.min(alpha, 1)})`;
+      }
+    });
+    
+    // Listen for fade in
+    ipcRenderer.on('overlay:fade-in', () => {
+      container.classList.add('visible');
+    });
+    
+    // Listen for fade out
+    ipcRenderer.on('overlay:fade-out', () => {
+      container.classList.remove('visible');
+    });
+    
+    // Listen for highlight
+    ipcRenderer.on('overlay:highlight', () => {
+      container.classList.add('highlighted');
+    });
+    
+    // Listen for unhighlight
+    ipcRenderer.on('overlay:unhighlight', () => {
+      container.classList.remove('highlighted');
+    });
+  </script>
+</body>
+</html>

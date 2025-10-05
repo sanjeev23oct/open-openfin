@@ -7,7 +7,7 @@ import { Context } from './types/Context';
 export interface IntentHandlerRegistration {
   appId: string;
   intent: string;
-  handler: (context: Context) => Promise<IntentResolution>;
+  handler: (context: Context) => IntentResolution | Promise<IntentResolution>;
 }
 
 /**

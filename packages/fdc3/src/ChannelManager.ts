@@ -62,12 +62,56 @@ class ChannelImpl implements Channel {
 /**
  * Private channel implementation
  */
-class PrivateChannelImpl extends ChannelImpl implements PrivateChannel {
+class PrivateChannelImpl implements PrivateChannel {
+  public readonly type: 'private' = 'private';
+  private contextListeners: Map<string, Set<ContextHandler>> = new Map();
+  private currentContext: Map<string, Context> = new Map();
   private disconnectHandlers: Set<() => void> = new Set();
   private isDisconnected: boolean = false;
   
-  constructor(id: string) {
-    super(id, 'private');
+  constructor(public id: string) {}
+  
+  async broadcast(context: Context): Promise<void> {
+    // Store context
+    this.currentContext.set(context.type, context);
+    
+    // Notify listeners
+    const typeListeners = this.contextListeners.get(context.type) || new Set();
+    const allListeners = this.contextListeners.get('*') || new Set();
+    
+    for (const handler of [...typeListeners, ...allListeners]) {
+      try {
+        await handler(context);
+      } catch (error) {
+        console.error('Context handler error:', error);
+      }
+    }
+  }
+  
+  async getCurrentContext(contextType?: string): Promise<Context | null> {
+    if (contextType) {
+      return this.currentContext.get(contextType) || null;
+    }
+    
+    // Return most recent context
+    const contexts = Array.from(this.currentContext.values());
+    return contexts.length > 0 ? contexts[contexts.length - 1] : null;
+  }
+  
+  addContextListener(contextType: string | null, handler: ContextHandler): Listener {
+    const type = contextType || '*';
+    
+    if (!this.contextListeners.has(type)) {
+      this.contextListeners.set(type, new Set());
+    }
+    
+    this.contextListeners.get(type)!.add(handler);
+    
+    return {
+      unsubscribe: () => {
+        this.contextListeners.get(type)?.delete(handler);
+      }
+    };
   }
   
   onDisconnect(handler: () => void): void {

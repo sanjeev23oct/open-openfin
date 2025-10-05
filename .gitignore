@@ -8,8 +8,14 @@ dist/
 build/
 *.js.map
 
+# Compiled JS in src (TypeScript output)
+packages/*/src/**/*.js
+!packages/*/src/**/*.config.js
+
 # TypeScript
 *.tsbuildinfo
+*.d.ts
+*.d.ts.map
 
 # IDE
 .vscode/
