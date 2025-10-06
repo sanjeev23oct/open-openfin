@@ -7,8 +7,6 @@
     "frame": true,
     "defaultWidth": 700,
     "defaultHeight": 500,
-    "defaultLeft": 100,
-    "defaultTop": 100,
     "resizable": true,
     "maximizable": true,
     "minimizable": true

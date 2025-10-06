@@ -78,7 +78,7 @@
 
   <!-- Tabs -->
   <div class="container mx-auto px-6 mb-6">
-    <div class="flex space-x-2 bg-white/10 backdrop-blur-md rounded-xl p-1 max-w-md">
+    <div class="flex space-x-2 bg-white/10 backdrop-blur-md rounded-xl p-1 max-w-2xl">
       <button onclick="showTab('all')" id="tab-all" class="flex-1 px-4 py-2 rounded-lg bg-white/20 font-medium transition">
         All Apps
       </button>
@@ -88,11 +88,14 @@
       <button onclick="showTab('favorites')" id="tab-favorites" class="flex-1 px-4 py-2 rounded-lg hover:bg-white/10 font-medium transition">
         Favorites
       </button>
+      <button onclick="showTab('workspaces')" id="tab-workspaces" class="flex-1 px-4 py-2 rounded-lg hover:bg-white/10 font-medium transition">
+        Workspaces
+      </button>
     </div>
   </div>
 
   <!-- App Grid -->
-  <div class="container mx-auto px-6 pb-6">
+  <div id="appGridContainer" class="container mx-auto px-6 pb-6">
     <div id="appGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       <!-- Apps will be inserted here -->
     </div>
@@ -100,6 +103,29 @@
     <div id="emptyState" class="text-center py-12 hidden">
       <div class="text-6xl mb-4">🔍</div>
       <p class="text-xl text-blue-200">No applications found</p>
+    </div>
+  </div>
+
+  <!-- Workspaces View -->
+  <div id="workspacesView" class="container mx-auto px-6 pb-6 hidden">
+    <div class="mb-6 flex items-center justify-between">
+      <h2 class="text-2xl font-bold">Saved Workspaces</h2>
+      <button onclick="saveCurrentWorkspace()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-medium transition flex items-center space-x-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+        </svg>
+        <span>Save Current Workspace</span>
+      </button>
+    </div>
+
+    <div id="workspaceGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Workspaces will be inserted here -->
+    </div>
+
+    <div id="workspaceEmptyState" class="text-center py-12 hidden">
+      <div class="text-6xl mb-4">💼</div>
+      <p class="text-xl text-blue-200 mb-4">No saved workspaces</p>
+      <p class="text-sm text-blue-300">Launch some apps and save your first workspace!</p>
     </div>
   </div>
 
@@ -282,7 +308,16 @@
       });
       document.getElementById(`tab-${tab}`).classList.add('bg-white/20');
       document.getElementById(`tab-${tab}`).classList.remove('hover:bg-white/10');
-      renderApps();
+      
+      if (tab === 'workspaces') {
+        document.getElementById('appGridContainer').classList.add('hidden');
+        document.getElementById('workspacesView').classList.remove('hidden');
+        renderWorkspaces();
+      } else {
+        document.getElementById('appGridContainer').classList.remove('hidden');
+        document.getElementById('workspacesView').classList.add('hidden');
+        renderApps();
+      }
     }
 
     function filterApps() {
@@ -337,6 +372,92 @@
       runningApps.add(data.appId);
       renderApps();
     });
+
+    // Workspace Management
+    async function renderWorkspaces() {
+      try {
+        const workspaces = await window.platform.listWorkspaces();
+        const grid = document.getElementById('workspaceGrid');
+        const emptyState = document.getElementById('workspaceEmptyState');
+
+        if (workspaces.length === 0) {
+          grid.classList.add('hidden');
+          emptyState.classList.remove('hidden');
+          return;
+        }
+
+        grid.classList.remove('hidden');
+        emptyState.classList.add('hidden');
+
+        grid.innerHTML = workspaces.map(workspace => `
+          <div class="app-card bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 hover:border-blue-400 transition">
+            <div class="flex items-start justify-between mb-4">
+              <div class="text-4xl">💼</div>
+              <button onclick="deleteWorkspace('${workspace.name}')" class="text-red-400 hover:text-red-300 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </div>
+            <h3 class="text-xl font-bold mb-2">${workspace.name}</h3>
+            <p class="text-sm text-blue-200 mb-4">${workspace.appCount} apps, ${workspace.groupCount} groups</p>
+            <button onclick="loadWorkspace('${workspace.name}')" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition">
+              Load Workspace
+            </button>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Failed to render workspaces:', error);
+      }
+    }
+
+    async function saveCurrentWorkspace() {
+      const name = prompt('Enter workspace name:');
+      if (!name) return;
+
+      try {
+        await window.platform.saveWorkspace(name);
+        alert(`Workspace "${name}" saved successfully!`);
+        renderWorkspaces();
+      } catch (error) {
+        console.error('Failed to save workspace:', error);
+        alert('Failed to save workspace');
+      }
+    }
+
+    async function loadWorkspace(name) {
+      if (!confirm(`Load workspace "${name}"? This will close all current apps.`)) {
+        return;
+      }
+
+      try {
+        await window.platform.loadWorkspace(name);
+        runningApps.clear();
+        // Refresh running apps after a delay
+        setTimeout(async () => {
+          const running = await window.platform.getRunningApps();
+          runningApps = new Set(running);
+          renderApps();
+        }, 2000);
+      } catch (error) {
+        console.error('Failed to load workspace:', error);
+        alert('Failed to load workspace');
+      }
+    }
+
+    async function deleteWorkspace(name) {
+      if (!confirm(`Delete workspace "${name}"?`)) {
+        return;
+      }
+
+      try {
+        await window.platform.deleteWorkspace(name);
+        renderWorkspaces();
+      } catch (error) {
+        console.error('Failed to delete workspace:', error);
+        alert('Failed to delete workspace');
+      }
+    }
 
     // Initialize
     renderApps();

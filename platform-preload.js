@@ -52,5 +52,35 @@ contextBridge.exposeInMainWorld('platform', {
   
   onAppClosed: (callback) => {
     ipcRenderer.on('app-closed', (_event, appId) => callback(appId));
+  },
+  
+  // Workspace management
+  saveWorkspace: async (name) => {
+    return ipcRenderer.invoke('workspace:save', name);
+  },
+  
+  loadWorkspace: async (name) => {
+    return ipcRenderer.invoke('workspace:load', name);
+  },
+  
+  listWorkspaces: async () => {
+    return ipcRenderer.invoke('workspace:list');
+  },
+  
+  deleteWorkspace: async (name) => {
+    return ipcRenderer.invoke('workspace:delete', name);
+  },
+  
+  // Window management
+  getAppState: async (appId) => {
+    return ipcRenderer.invoke('platform:get-app-state', appId);
+  },
+  
+  snapWindow: async (appId, zoneName) => {
+    return ipcRenderer.invoke('platform:snap-window', appId, zoneName);
+  },
+  
+  groupWindows: async (appId1, appId2) => {
+    return ipcRenderer.invoke('platform:group-windows', appId1, appId2);
   }
 });
