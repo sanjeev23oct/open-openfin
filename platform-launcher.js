@@ -87,6 +87,100 @@ class PlatformState {
 const platform = new PlatformState();
 
 /**
+ * Window snapping configuration
+ */
+const SNAP_THRESHOLD = 20; // pixels
+const SNAP_ZONES = {
+  'left': { x: 0, y: 0, widthFactor: 0.5, heightFactor: 1 },
+  'right': { x: 0.5, y: 0, widthFactor: 0.5, heightFactor: 1 },
+  'top': { x: 0, y: 0, widthFactor: 1, heightFactor: 0.5 },
+  'bottom': { x: 0, y: 0.5, widthFactor: 1, heightFactor: 0.5 },
+  'top-left': { x: 0, y: 0, widthFactor: 0.5, heightFactor: 0.5 },
+  'top-right': { x: 0.5, y: 0, widthFactor: 0.5, heightFactor: 0.5 },
+  'bottom-left': { x: 0, y: 0.5, widthFactor: 0.5, heightFactor: 0.5 },
+  'bottom-right': { x: 0.5, y: 0.5, widthFactor: 0.5, heightFactor: 0.5 },
+  'maximize': { x: 0, y: 0, widthFactor: 1, heightFactor: 1 }
+};
+
+/**
+ * Enable window snapping for a window
+ */
+function enableWindowSnapping(window) {
+  let isDragging = false;
+  let dragStartBounds = null;
+  
+  window.on('will-move', (event, bounds) => {
+    if (!isDragging) {
+      isDragging = true;
+      dragStartBounds = window.getBounds();
+    }
+  });
+  
+  window.on('moved', () => {
+    if (isDragging) {
+      const bounds = window.getBounds();
+      const display = screen.getDisplayNearestPoint({ x: bounds.x, y: bounds.y });
+      const workArea = display.workArea;
+      
+      // Check for edge snapping
+      let snapped = false;
+      
+      // Left edge
+      if (Math.abs(bounds.x - workArea.x) < SNAP_THRESHOLD) {
+        bounds.x = workArea.x;
+        snapped = true;
+      }
+      
+      // Right edge
+      if (Math.abs((bounds.x + bounds.width) - (workArea.x + workArea.width)) < SNAP_THRESHOLD) {
+        bounds.x = workArea.x + workArea.width - bounds.width;
+        snapped = true;
+      }
+      
+      // Top edge
+      if (Math.abs(bounds.y - workArea.y) < SNAP_THRESHOLD) {
+        bounds.y = workArea.y;
+        snapped = true;
+      }
+      
+      // Bottom edge
+      if (Math.abs((bounds.y + bounds.height) - (workArea.y + workArea.height)) < SNAP_THRESHOLD) {
+        bounds.y = workArea.y + workArea.height - bounds.height;
+        snapped = true;
+      }
+      
+      if (snapped) {
+        window.setBounds(bounds);
+      }
+    }
+  });
+  
+  window.on('move', () => {
+    isDragging = false;
+  });
+}
+
+/**
+ * Snap window to a predefined zone
+ */
+function snapWindowToZone(window, zoneName) {
+  const zone = SNAP_ZONES[zoneName];
+  if (!zone) return;
+  
+  const display = screen.getPrimaryDisplay();
+  const workArea = display.workArea;
+  
+  const bounds = {
+    x: Math.floor(workArea.x + (workArea.width * zone.x)),
+    y: Math.floor(workArea.y + (workArea.height * zone.y)),
+    width: Math.floor(workArea.width * zone.widthFactor),
+    height: Math.floor(workArea.height * zone.heightFactor)
+  };
+  
+  window.setBounds(bounds, true);
+}
+
+/**
  * Calculate smart position for new window
  */
 function calculateWindowPosition(width, height) {
@@ -584,43 +678,10 @@ function showWindowContextMenu(window, appId) {
 }
 
 /**
- * Dock window to position
+ * Dock window to position (uses snapWindowToZone)
  */
 function dockWindow(window, position) {
-  const display = screen.getPrimaryDisplay();
-  const { width, height } = display.workAreaSize;
-  
-  let bounds;
-  switch (position) {
-    case 'left':
-      bounds = { x: 0, y: 0, width: Math.floor(width / 2), height };
-      break;
-    case 'right':
-      bounds = { x: Math.floor(width / 2), y: 0, width: Math.floor(width / 2), height };
-      break;
-    case 'top':
-      bounds = { x: 0, y: 0, width, height: Math.floor(height / 2) };
-      break;
-    case 'bottom':
-      bounds = { x: 0, y: Math.floor(height / 2), width, height: Math.floor(height / 2) };
-      break;
-    case 'top-left':
-      bounds = { x: 0, y: 0, width: Math.floor(width / 2), height: Math.floor(height / 2) };
-      break;
-    case 'top-right':
-      bounds = { x: Math.floor(width / 2), y: 0, width: Math.floor(width / 2), height: Math.floor(height / 2) };
-      break;
-    case 'bottom-left':
-      bounds = { x: 0, y: Math.floor(height / 2), width: Math.floor(width / 2), height: Math.floor(height / 2) };
-      break;
-    case 'bottom-right':
-      bounds = { x: Math.floor(width / 2), y: Math.floor(height / 2), width: Math.floor(width / 2), height: Math.floor(height / 2) };
-      break;
-  }
-  
-  if (bounds) {
-    window.setBounds(bounds, true);
-  }
+  snapWindowToZone(window, position);
 }
 
 /**
@@ -659,6 +720,9 @@ function launchApplication(manifestPath, appId) {
     title: startupApp.name,
     show: startupApp.autoShow !== false
   });
+  
+  // Enable window snapping
+  enableWindowSnapping(window);
   
   // Add context menu on right-click
   window.webContents.on('context-menu', () => {
@@ -737,6 +801,9 @@ function launchApplicationWithManifest(manifest, appId) {
     title: startupApp.name,
     show: startupApp.autoShow !== false
   });
+  
+  // Enable window snapping
+  enableWindowSnapping(window);
   
   // Add context menu on right-click
   window.webContents.on('context-menu', () => {
