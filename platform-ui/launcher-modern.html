@@ -375,12 +375,15 @@
 
     // Workspace Management
     async function renderWorkspaces() {
+      console.log('[Workspace] Rendering workspaces');
       try {
         const workspaces = await window.platform.listWorkspaces();
+        console.log('[Workspace] Found:', workspaces);
         const grid = document.getElementById('workspaceGrid');
         const emptyState = document.getElementById('workspaceEmptyState');
 
         if (workspaces.length === 0) {
+          console.log('[Workspace] No workspaces, showing empty state');
           grid.classList.add('hidden');
           emptyState.classList.remove('hidden');
           return;
@@ -412,27 +415,40 @@
     }
 
     async function saveCurrentWorkspace() {
-      const name = prompt('Enter workspace name:');
-      if (!name) return;
-
-      try {
-        await window.platform.saveWorkspace(name);
-        alert(`Workspace "${name}" saved successfully!`);
-        renderWorkspaces();
-      } catch (error) {
-        console.error('Failed to save workspace:', error);
-        alert('Failed to save workspace');
-      }
-    }
-
-    async function loadWorkspace(name) {
-      if (!confirm(`Load workspace "${name}"? This will close all current apps.`)) {
+      console.log('[Workspace] Save button clicked');
+      
+      const name = await showInputDialog('Enter workspace name:');
+      if (!name) {
+        console.log('[Workspace] User cancelled');
         return;
       }
 
       try {
-        await window.platform.loadWorkspace(name);
+        console.log('[Workspace] Saving:', name);
+        const result = await window.platform.saveWorkspace(name);
+        console.log('[Workspace] Save result:', result);
+        showNotification(`Workspace "${name}" saved successfully!`, 'success');
+        renderWorkspaces();
+      } catch (error) {
+        console.error('[Workspace] Failed to save:', error);
+        showNotification(`Failed to save workspace: ${error.message}`, 'error');
+      }
+    }
+
+    async function loadWorkspace(name) {
+      console.log('[Workspace] Load clicked:', name);
+      
+      const confirmed = await showConfirmDialog(`Load workspace "${name}"?`, 'This will close all current apps.');
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+        console.log('[Workspace] Loading:', name);
+        const result = await window.platform.loadWorkspace(name);
+        console.log('[Workspace] Load result:', result);
         runningApps.clear();
+        showNotification(`Workspace "${name}" loaded!`, 'success');
         // Refresh running apps after a delay
         setTimeout(async () => {
           const running = await window.platform.getRunningApps();
@@ -440,23 +456,97 @@
           renderApps();
         }, 2000);
       } catch (error) {
-        console.error('Failed to load workspace:', error);
-        alert('Failed to load workspace');
+        console.error('[Workspace] Failed to load:', error);
+        showNotification(`Failed to load workspace: ${error.message}`, 'error');
       }
     }
 
     async function deleteWorkspace(name) {
-      if (!confirm(`Delete workspace "${name}"?`)) {
+      const confirmed = await showConfirmDialog(`Delete workspace "${name}"?`, 'This action cannot be undone.');
+      if (!confirmed) {
         return;
       }
 
       try {
         await window.platform.deleteWorkspace(name);
+        showNotification(`Workspace "${name}" deleted`, 'success');
         renderWorkspaces();
       } catch (error) {
         console.error('Failed to delete workspace:', error);
-        alert('Failed to delete workspace');
+        showNotification('Failed to delete workspace', 'error');
       }
+    }
+
+    // Dialog helpers (Electron-compatible)
+    function showInputDialog(message) {
+      return new Promise((resolve) => {
+        const dialog = document.createElement('div');
+        dialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        dialog.innerHTML = `
+          <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-semibold mb-4 text-gray-900">${message}</h3>
+            <input type="text" id="dialogInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Workspace name">
+            <div class="flex justify-end space-x-3 mt-4">
+              <button onclick="closeDialog(null)" class="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
+              <button onclick="closeDialog(document.getElementById('dialogInput').value)" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save</button>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(dialog);
+        document.getElementById('dialogInput').focus();
+        
+        // Handle Enter key
+        document.getElementById('dialogInput').addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            closeDialog(e.target.value);
+          }
+        });
+        
+        window.closeDialog = (value) => {
+          document.body.removeChild(dialog);
+          delete window.closeDialog;
+          resolve(value);
+        };
+      });
+    }
+    
+    function showConfirmDialog(title, message) {
+      return new Promise((resolve) => {
+        const dialog = document.createElement('div');
+        dialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        dialog.innerHTML = `
+          <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-semibold mb-2 text-gray-900">${title}</h3>
+            <p class="text-gray-600 mb-4">${message}</p>
+            <div class="flex justify-end space-x-3">
+              <button onclick="closeConfirm(false)" class="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
+              <button onclick="closeConfirm(true)" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Confirm</button>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(dialog);
+        
+        window.closeConfirm = (confirmed) => {
+          document.body.removeChild(dialog);
+          delete window.closeConfirm;
+          resolve(confirmed);
+        };
+      });
+    }
+    
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+      notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      setTimeout(() => {
+        if (document.body.contains(notification)) {
+          document.body.removeChild(notification);
+        }
+      }, 3000);
     }
 
     // Initialize
