@@ -61,6 +61,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Setup UI
     setupUI();
     
+    // Auto-launch demo apps in split-screen layout
+    await autoLaunchDemoApps();
+    
     console.log('[Web Platform] Ready!');
   } catch (error) {
     console.error('[Web Platform] Initialization failed:', error);
@@ -316,6 +319,40 @@ async function launchApp(appId: string) {
   } catch (error) {
     console.error('[UI] Failed to launch app:', error);
     alert(`Failed to launch app: ${error}`);
+  }
+}
+
+async function autoLaunchDemoApps() {
+  try {
+    console.log('[Web Platform] Auto-launching demo apps...');
+    
+    // Launch Ticker List on the left side
+    const tickerListId = await platform.launchApplication('ticker-list', {
+      bounds: {
+        x: 20,
+        y: 80,
+        width: Math.floor((window.innerWidth - 60) / 2),
+        height: window.innerHeight - 180
+      }
+    });
+    
+    // Wait a moment for first app to initialize
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Launch Ticker Details on the right side
+    const tickerDetailsId = await platform.launchApplication('ticker-details', {
+      bounds: {
+        x: Math.floor((window.innerWidth - 60) / 2) + 40,
+        y: 80,
+        width: Math.floor((window.innerWidth - 60) / 2),
+        height: window.innerHeight - 180
+      }
+    });
+    
+    console.log('[Web Platform] Demo apps launched:', { tickerListId, tickerDetailsId });
+    updateDock();
+  } catch (error) {
+    console.error('[Web Platform] Failed to auto-launch demo apps:', error);
   }
 }
 
