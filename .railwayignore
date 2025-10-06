@@ -1,0 +1,13 @@
+packages/
+apps/
+platform-ui/
+platform-modules/
+workspaces/
+docs/
+scripts/
+node_modules/
+*.log
+.DS_Store
+.env
+.env.local
+!deploy-package/

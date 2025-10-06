@@ -2,10 +2,10 @@
 nixPkgs = ["nodejs-18_x"]
 
 [phases.install]
-cmds = ["cd deploy-package && npm install --production"]
+cmds = ["npm install --production"]
 
 [phases.build]
 cmds = ["echo 'Using pre-built dist folder'"]
 
 [start]
-cmd = "cd deploy-package && node server.js"
+cmd = "node server.js"

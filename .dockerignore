@@ -1,0 +1,13 @@
+node_modules
+*.log
+.git
+.DS_Store
+packages/
+apps/
+platform-ui/
+platform-modules/
+workspaces/
+docs/
+scripts/
+!deploy-package/
+!deploy-package/dist/

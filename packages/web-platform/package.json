@@ -22,7 +22,8 @@
   "dependencies": {
     "@desktop-interop/fdc3": "*",
     "@desktop-interop/fdc3-core": "*",
-    "@desktop-interop/sdk": "*"
+    "@desktop-interop/sdk": "*",
+    "express": "^4.18.2"
   },
   "devDependencies": {
     "typescript": "^5.0.0",
