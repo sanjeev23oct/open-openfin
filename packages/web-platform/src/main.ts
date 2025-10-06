@@ -326,26 +326,36 @@ async function autoLaunchDemoApps() {
   try {
     console.log('[Web Platform] Auto-launching demo apps...');
     
-    // Launch Ticker List on the left side
+    // Calculate exact 50/50 split with margins
+    const margin = 20;
+    const gap = 10;
+    const topOffset = 80;
+    const bottomOffset = 100;
+    
+    const availableWidth = window.innerWidth - (2 * margin) - gap;
+    const windowWidth = Math.floor(availableWidth / 2);
+    const windowHeight = window.innerHeight - topOffset - bottomOffset;
+    
+    // Launch Ticker List on the left side (exactly 50%)
     const tickerListId = await platform.launchApplication('ticker-list', {
       bounds: {
-        x: 20,
-        y: 80,
-        width: Math.floor((window.innerWidth - 60) / 2),
-        height: window.innerHeight - 180
+        x: margin,
+        y: topOffset,
+        width: windowWidth,
+        height: windowHeight
       }
     });
     
     // Wait a moment for first app to initialize
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Launch Ticker Details on the right side
+    // Launch Ticker Details on the right side (exactly 50%)
     const tickerDetailsId = await platform.launchApplication('ticker-details', {
       bounds: {
-        x: Math.floor((window.innerWidth - 60) / 2) + 40,
-        y: 80,
-        width: Math.floor((window.innerWidth - 60) / 2),
-        height: window.innerHeight - 180
+        x: margin + windowWidth + gap,
+        y: topOffset,
+        width: windowWidth,
+        height: windowHeight
       }
     });
     
