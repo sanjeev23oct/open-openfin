@@ -1,6 +1,6 @@
 {
   "name": "desktop-interop-platform",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Open-source desktop interoperability platform with FDC3 support",
   "main": "platform-launcher.js",
   "author": "Sanjeev Kumar and Contributors",
@@ -50,16 +50,25 @@
       "node_modules/**/*"
     ],
     "win": {
-      "target": ["nsis", "portable"],
+      "target": [
+        "nsis",
+        "portable"
+      ],
       "icon": "assets/icon.png"
     },
     "mac": {
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "icon": "assets/icon.png",
       "category": "public.app-category.productivity"
     },
     "linux": {
-      "target": ["AppImage", "deb"],
+      "target": [
+        "AppImage",
+        "deb"
+      ],
       "icon": "assets/icon.png",
       "category": "Utility"
     },
