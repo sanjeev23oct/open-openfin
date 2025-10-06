@@ -1,22 +1,38 @@
-# Desktop Interoperability Platform
+# Open OpenFin - Desktop & Web Interoperability Platform
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
 [![FDC3](https://img.shields.io/badge/FDC3-2.0-orange)](https://fdc3.finos.org/)
 
-An open-source desktop interoperability platform that enables seamless communication and workflow orchestration between multiple applications running on the desktop. Built with Electron and TypeScript, providing FDC3-compliant inter-application messaging, sophisticated window management, and enterprise-grade security.
+An open-source interoperability platform available in both **Desktop** (Electron) and **Web** (Browser) versions. Enables seamless communication and workflow orchestration between multiple applications with FDC3-compliant messaging, sophisticated window management, and enterprise-grade security.
+
+## 🚀 Two Platform Options
+
+### Desktop Platform (Electron)
+- Native desktop application with full OS integration
+- Advanced window management and system tray
+- File system access and native notifications
+- Multi-monitor support and keyboard shortcuts
+
+### Web Platform (Browser) 🌐 **NEW!**
+- Runs entirely in the browser - no installation required
+- Cross-platform compatibility (Windows, Mac, Linux)
+- Instant deployment and updates
+- Perfect for cloud environments and demos
+- **[Try Live Demo →](https://open-openfin-web.railway.app)** *(Coming Soon)*
 
 ## 🚀 Features
 
-- **🖥️ Runtime Environment** - Chromium-based container for hosting web applications with process isolation
+- **🖥️ Runtime Environment** - Chromium-based container (Desktop) or browser-based (Web) for hosting applications
 - **📡 FDC3 Messaging** - Standards-based inter-application communication (FDC3 2.0 compliant)
 - **🪟 Window Management** - Advanced window grouping, docking, snapping, and multi-monitor support
 - **🔄 Application Lifecycle** - Centralized application management with crash detection and recovery
 - **🔒 Security** - Granular permissions, sandboxing, CSP enforcement, and context isolation
 - **📦 Platform Provider** - Extensible workspace and layout management
-- **🎨 System Integration** - Native notifications, system tray, and global keyboard shortcuts
+- **🎨 System Integration** - Native notifications, system tray (Desktop), and keyboard shortcuts
 - **⚙️ Configuration** - Flexible JSON-based configuration with runtime updates
+- **🔍 FDC3 Monitor** - Real-time diagnostic tool for debugging interop (Web Platform)
 
 ## 📋 Table of Contents
 
@@ -61,7 +77,7 @@ An open-source desktop interoperability platform that enables seamless communica
 - **npm** or **yarn**
 - **Git**
 
-### Installation from Source
+### Desktop Platform - Installation from Source
 
 ```bash
 # Clone the repository
@@ -76,18 +92,31 @@ node create-icons.js
 
 # Build all packages
 npm run build
-```
 
-### Run from Source
-
-```bash
-# Launch the platform
+# Launch the desktop platform
 npm start
 
 # Or launch with sample workspace
 npm run start:sample-app-1
 npm run start:sample-app-2
 ```
+
+### Web Platform 🌐 - Quick Start
+
+```bash
+# Navigate to web platform
+cd packages/web-platform
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Open http://localhost:3000
+```
+
+**Or try the live demo:** [https://open-openfin-web.railway.app](https://open-openfin-web.railway.app) *(Coming Soon)*
 
 ### Build Executables
 
@@ -178,14 +207,26 @@ The platform follows a multi-process architecture similar to OpenFin:
 
 ### Key Components
 
-- **RVM (Runtime Version Manager)** - Manages multiple runtime versions and launches appropriate version
-- **Runtime Core** - Main process hosting core services
+#### Shared Packages
+- **FDC3 Core** - Platform-agnostic FDC3 logic
+- **FDC3 Service** - FDC3-compliant messaging layer
+- **SDK** - Developer SDK for building applications
+
+#### Desktop Platform
+- **RVM (Runtime Version Manager)** - Manages multiple runtime versions
+- **Runtime Core** - Main Electron process hosting core services
 - **Inter-Application Bus (IAB)** - Foundation for all messaging
-- **FDC3 Service** - FDC3-compliant messaging layer built on IAB
 - **Window Manager** - Advanced window management capabilities
 - **Application Lifecycle Manager** - Application launch, monitoring, and crash recovery
 - **Security Manager** - Permission validation and security enforcement
 - **Platform Provider** - Workspace and layout management
+
+#### Web Platform 🌐
+- **Web Platform Core** - Browser-based platform orchestrator
+- **FDC3 Bridge** - PostMessage-based FDC3 communication
+- **Browser Window Manager** - Simulated window management with iframes
+- **Storage Manager** - IndexedDB + localStorage persistence
+- **FDC3 Monitor** - Real-time diagnostic tool for debugging
 
 See [ARCHITECTURE-EXPLAINED.md](ARCHITECTURE-EXPLAINED.md) for detailed architecture documentation.
 
@@ -239,11 +280,13 @@ npm run start:workspace
 ```
 open-openfin/
 ├── packages/
-│   ├── rvm/                 # Runtime Version Manager
-│   ├── runtime/             # Core Runtime
-│   ├── sdk/                 # Platform SDK (fin API)
+│   ├── fdc3-core/           # Platform-agnostic FDC3 logic
 │   ├── fdc3/                # FDC3 Implementation
-│   └── provider/            # Default Platform Provider
+│   ├── sdk/                 # Platform SDK (fin API)
+│   ├── rvm/                 # Runtime Version Manager (Desktop)
+│   ├── runtime/             # Core Runtime (Desktop)
+│   ├── provider/            # Default Platform Provider (Desktop)
+│   └── web-platform/        # Web Platform 🌐 (Browser)
 ├── apps/
 │   ├── sample-app-1/        # Sample broadcaster app
 │   ├── sample-app-2/        # Sample listener app

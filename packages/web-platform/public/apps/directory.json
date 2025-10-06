@@ -1,0 +1,52 @@
+{
+  "applications": [
+    {
+      "appId": "ticker-list",
+      "name": "Ticker List",
+      "title": "Stock Ticker List",
+      "description": "Browse and select stock tickers",
+      "url": "/apps/ticker-list/index.html",
+      "icon": "📊",
+      "window": {
+        "defaultSize": { "width": 400, "height": 600 },
+        "minSize": { "width": 300, "height": 400 }
+      },
+      "intents": [
+        {
+          "name": "ViewChart",
+          "contexts": ["fdc3.instrument"]
+        }
+      ]
+    },
+    {
+      "appId": "ticker-details",
+      "name": "Ticker Details",
+      "title": "Stock Details",
+      "description": "View detailed stock information",
+      "url": "/apps/ticker-details/index.html",
+      "icon": "📈",
+      "window": {
+        "defaultSize": { "width": 600, "height": 500 },
+        "minSize": { "width": 400, "height": 300 }
+      },
+      "intents": [
+        {
+          "name": "ViewChart",
+          "contexts": ["fdc3.instrument"]
+        }
+      ]
+    },
+    {
+      "appId": "news-feed",
+      "name": "News Feed",
+      "title": "Financial News",
+      "description": "Latest financial news",
+      "url": "/apps/news-feed/index.html",
+      "icon": "📰",
+      "window": {
+        "defaultSize": { "width": 500, "height": 700 },
+        "minSize": { "width": 350, "height": 400 }
+      }
+    }
+  ]
+}

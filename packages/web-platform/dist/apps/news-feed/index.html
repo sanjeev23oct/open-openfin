@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>News Feed</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f8f9fa;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .news-item {
+      background: white;
+      padding: 16px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+    .news-title {
+      font-weight: 600;
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    .news-content {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .news-meta {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #999;
+    }
+    .status {
+      margin-bottom: 20px;
+      padding: 12px;
+      background: #e8eaf6;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📰 Financial News</h1>
+  <div class="status" id="status">Waiting for FDC3...</div>
+  <div id="news-feed"></div>
+  
+  <script>
+    const newsTemplates = [
+      { title: 'Market Rally Continues', content: 'Stock markets reached new highs today as investors remain optimistic about economic recovery.' },
+      { title: 'Tech Sector Leads Gains', content: 'Technology stocks outperformed the broader market with strong earnings reports.' },
+      { title: 'Federal Reserve Holds Rates', content: 'The Federal Reserve announced it will maintain current interest rates.' },
+      { title: 'Oil Prices Surge', content: 'Crude oil prices jumped 5% on supply concerns and increased demand.' },
+      { title: 'Retail Sales Beat Expectations', content: 'Consumer spending showed resilience with retail sales exceeding forecasts.' }
+    ];
+    
+    function generateNews(ticker) {
+      const news = [];
+      for (let i = 0; i < 3; i++) {
+        const template = newsTemplates[Math.floor(Math.random() * newsTemplates.length)];
+        news.push({
+          title: `${ticker}: ${template.title}`,
+          content: template.content,
+          time: `${Math.floor(Math.random() * 12) + 1} hours ago`
+        });
+      }
+      return news;
+    }
+    
+    function displayNews(ticker) {
+      const feed = document.getElementById('news-feed');
+      const news = generateNews(ticker);
+      
+      feed.innerHTML = news.map(item => `
+        <div class="news-item">
+          <div class="news-title">${item.title}</div>
+          <div class="news-content">${item.content}</div>
+          <div class="news-meta">${item.time}</div>
+        </div>
+      `).join('');
+    }
+    
+    // Wait for FDC3
+    function checkFDC3() {
+      if (window.fdc3) {
+        document.getElementById('status').textContent = '✅ FDC3 Ready - Listening for ticker selections';
+        document.getElementById('status').style.background = '#c8e6c9';
+        
+        // Show general news initially
+        displayNews('Market');
+        
+        // Listen for instrument contexts
+        window.fdc3.addContextListener('fdc3.instrument', (context) => {
+          console.log('Received instrument context:', context);
+          const ticker = context.id.ticker;
+          
+          displayNews(ticker);
+          document.getElementById('status').textContent = `📥 Showing news for ${ticker}`;
+        });
+      } else {
+        setTimeout(checkFDC3, 100);
+      }
+    }
+    
+    checkFDC3();
+  </script>
+</body>
+</html>

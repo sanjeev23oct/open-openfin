@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["nodejs-18_x"]
+
+[phases.install]
+cmds = ["npm install -g serve"]
+
+[phases.build]
+cmds = ["echo 'Using pre-built files'"]
+
+[start]
+cmd = "cd packages/web-platform && npx serve dist -l $PORT -s"

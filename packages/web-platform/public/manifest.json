@@ -1,0 +1,13 @@
+{
+  "name": "Open OpenFin Web Platform",
+  "short_name": "OpenFin Web",
+  "description": "Browser-based FDC3 interop platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1976d2",
+  "orientation": "any",
+  "icons": [],
+  "categories": ["productivity", "business"],
+  "screenshots": []
+}
