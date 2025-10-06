@@ -107,11 +107,22 @@ https://open-openfin-production.up.railway.app
 4. **Simple**: Easy to understand and maintain
 5. **Portable**: Can be deployed to any Node.js hosting platform
 
+## Auto-Launch Feature
+The web platform now automatically launches Ticker List and Ticker Details in a split-screen layout when loaded:
+- **Ticker List** - Left side (50% width)
+- **Ticker Details** - Right side (50% width)
+- Both apps are positioned and sized automatically
+- FDC3 communication works between them out of the box
+
+This provides an immediate demo of the platform's capabilities without requiring manual app launching.
+
 ## Future Updates
 When you update the web platform:
 1. Build locally: `cd packages/web-platform && npm run build`
-2. Copy dist: `cp -r packages/web-platform/dist deploy-package/`
-3. Commit and push: `git add deploy-package/dist && git commit -m "Update web platform" && git push`
+2. Copy dist: `cp -r packages/web-platform/dist/. deploy-package/dist/`
+3. Commit and push: `git add -f deploy-package/dist && git commit -m "Update web platform" && git push`
+
+Note: Use `-f` flag to force add the dist folder since it's normally gitignored.
 
 ## Notes
 - The `dist` folder is committed to git (normally ignored) specifically for Railway deployment
