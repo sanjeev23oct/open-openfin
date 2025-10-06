@@ -7,21 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2025-01-06
+
 ### Added
 - Workspace management with save/load/delete functionality
 - Electron-compatible custom dialogs (input, confirm, notification)
 - Modern launcher UI with Tailwind CSS
 - Toast notifications for user feedback
 - Workspace metadata with app and group counts
+- GitHub Actions workflow for automated multi-platform builds
+- Release automation scripts and documentation
+- Comprehensive distribution guide
 
 ### Fixed
 - prompt(), confirm(), and alert() not working in Electron environment
 - Workspace rendering issues in launcher
 - Dialog compatibility issues
+- Workspace groupCount field missing in backend
 
 ### Changed
 - Replaced native browser dialogs with custom styled dialogs
-- Improved workspace UI/UX
+- Improved workspace UI/UX with better visual feedback
 
 ## [0.1.0] - 2025-01-06
 
