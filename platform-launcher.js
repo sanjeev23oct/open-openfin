@@ -87,6 +87,80 @@ class PlatformState {
 const platform = new PlatformState();
 
 /**
+ * Calculate smart position for new window
+ */
+function calculateWindowPosition(width, height) {
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+  
+  // If no windows open, center the first one
+  if (platform.appWindows.size === 0) {
+    return {
+      x: Math.floor((screenWidth - width) / 2),
+      y: Math.floor((screenHeight - height) / 2)
+    };
+  }
+  
+  // Get all existing window positions
+  const existingPositions = [];
+  for (const win of platform.appWindows.values()) {
+    if (!win.isDestroyed()) {
+      const bounds = win.getBounds();
+      existingPositions.push(bounds);
+    }
+  }
+  
+  // Try cascade pattern (offset by 30px each time)
+  const cascadeOffset = 30;
+  const maxCascade = 10;
+  
+  for (let i = 0; i < maxCascade; i++) {
+    const x = 100 + (i * cascadeOffset);
+    const y = 100 + (i * cascadeOffset);
+    
+    // Check if this position overlaps with existing windows
+    const overlaps = existingPositions.some(pos => {
+      return !(x + width < pos.x || 
+               x > pos.x + pos.width ||
+               y + height < pos.y ||
+               y > pos.y + pos.height);
+    });
+    
+    if (!overlaps && x + width < screenWidth && y + height < screenHeight) {
+      return { x, y };
+    }
+  }
+  
+  // If cascade doesn't work, try tiling
+  const cols = Math.floor(screenWidth / width);
+  const rows = Math.floor(screenHeight / height);
+  
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const x = col * width;
+      const y = row * height;
+      
+      const overlaps = existingPositions.some(pos => {
+        return !(x + width < pos.x || 
+                 x > pos.x + pos.width ||
+                 y + height < pos.y ||
+                 y > pos.y + pos.height);
+      });
+      
+      if (!overlaps) {
+        return { x, y };
+      }
+    }
+  }
+  
+  // Fallback: slight offset from center
+  return {
+    x: Math.floor((screenWidth - width) / 2) + (platform.appWindows.size * 20),
+    y: Math.floor((screenHeight - height) / 2) + (platform.appWindows.size * 20)
+  };
+}
+
+/**
  * Create the platform launcher window
  */
 function createLauncherWindow() {
@@ -565,11 +639,18 @@ function launchApplication(manifestPath, appId) {
   const manifest = JSON.parse(manifestContent);
   const startupApp = manifest.startup_app;
   
+  // Calculate smart position if not specified
+  const width = startupApp.defaultWidth || 800;
+  const height = startupApp.defaultHeight || 600;
+  const position = (startupApp.defaultLeft !== undefined && startupApp.defaultTop !== undefined)
+    ? { x: startupApp.defaultLeft, y: startupApp.defaultTop }
+    : calculateWindowPosition(width, height);
+  
   const window = new BrowserWindow({
-    width: startupApp.defaultWidth || 800,
-    height: startupApp.defaultHeight || 600,
-    x: startupApp.defaultLeft,
-    y: startupApp.defaultTop,
+    width,
+    height,
+    x: position.x,
+    y: position.y,
     webPreferences: {
       preload: path.join(__dirname, 'tests', 'test-preload.js'),
       contextIsolation: true,
@@ -636,11 +717,18 @@ function launchApplicationWithManifest(manifest, appId) {
   
   const startupApp = manifest.startup_app;
   
+  // Calculate smart position if not specified
+  const width = startupApp.defaultWidth || 800;
+  const height = startupApp.defaultHeight || 600;
+  const position = (startupApp.defaultLeft !== undefined && startupApp.defaultTop !== undefined)
+    ? { x: startupApp.defaultLeft, y: startupApp.defaultTop }
+    : calculateWindowPosition(width, height);
+  
   const window = new BrowserWindow({
-    width: startupApp.defaultWidth || 800,
-    height: startupApp.defaultHeight || 600,
-    x: startupApp.defaultLeft,
-    y: startupApp.defaultTop,
+    width,
+    height,
+    x: position.x,
+    y: position.y,
     webPreferences: {
       preload: path.join(__dirname, 'tests', 'test-preload.js'),
       contextIsolation: true,
