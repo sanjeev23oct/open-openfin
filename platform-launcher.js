@@ -114,9 +114,28 @@ function launchApp(manifestPath, appId) {
     return window;
   }
 
-  // Read manifest
-  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
-  const app = manifest.startup_app;
+  let app, appUrl;
+  
+  // Check if manifestPath is a URL (external app)
+  if (manifestPath.startsWith('http://') || manifestPath.startsWith('https://') || manifestPath.startsWith('www.')) {
+    // External URL - create a simple app config
+    let url = manifestPath;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
+    app = {
+      name: appId,
+      defaultWidth: 1024,
+      defaultHeight: 768,
+      autoShow: true
+    };
+    appUrl = url;
+  } else {
+    // Read manifest file
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    app = manifest.startup_app;
+    appUrl = app.url;
+  }
 
   // Get position - ALWAYS use auto-positioning
   const width = app.defaultWidth || 800;
@@ -161,8 +180,12 @@ function launchApp(manifestPath, appId) {
     }
   });
 
-  // Load app
-  window.loadFile(app.url);
+  // Load app - check if URL or file
+  if (appUrl.startsWith('http://') || appUrl.startsWith('https://')) {
+    window.loadURL(appUrl);
+  } else {
+    window.loadFile(appUrl);
+  }
 
   // Notify launcher
   if (platform.launcherWindow) {
