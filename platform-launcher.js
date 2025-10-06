@@ -571,7 +571,7 @@ function launchApplication(manifestPath, appId) {
     x: startupApp.defaultLeft,
     y: startupApp.defaultTop,
     webPreferences: {
-      preload: path.join(__dirname, 'test-preload.js'),
+      preload: path.join(__dirname, 'tests', 'test-preload.js'),
       contextIsolation: true,
       nodeIntegration: false
     },
@@ -642,7 +642,7 @@ function launchApplicationWithManifest(manifest, appId) {
     x: startupApp.defaultLeft,
     y: startupApp.defaultTop,
     webPreferences: {
-      preload: path.join(__dirname, 'test-preload.js'),
+      preload: path.join(__dirname, 'tests', 'test-preload.js'),
       contextIsolation: true,
       nodeIntegration: false
     },

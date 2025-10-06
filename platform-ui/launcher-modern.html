@@ -136,8 +136,6 @@
   </div>
 
   <script>
-    const { ipcRenderer } = require('electron');
-    
     const builtInApps = [
       {
         id: 'ticker-list',
@@ -249,7 +247,7 @@
 
     async function launchApp(appId, manifestPath) {
       try {
-        await ipcRenderer.invoke('platform:launch-app', manifestPath, appId);
+        await window.platform.launchApp(manifestPath, appId);
         runningApps.add(appId);
         renderApps();
       } catch (error) {
@@ -260,7 +258,7 @@
 
     async function focusApp(appId) {
       try {
-        await ipcRenderer.invoke('platform:focus-app', appId);
+        await window.platform.focusApp(appId);
       } catch (error) {
         console.error('Failed to focus app:', error);
       }
@@ -326,16 +324,16 @@
     }
 
     async function minimizeLauncher() {
-      await ipcRenderer.invoke('platform:minimize-launcher');
+      await window.platform.minimizeLauncher();
     }
 
     // Listen for app closed events
-    ipcRenderer.on('app-closed', (event, appId) => {
+    window.platform.onAppClosed((appId) => {
       runningApps.delete(appId);
       renderApps();
     });
 
-    ipcRenderer.on('app-launched', (event, data) => {
+    window.platform.onAppLaunched((data) => {
       runningApps.add(data.appId);
       renderApps();
     });
