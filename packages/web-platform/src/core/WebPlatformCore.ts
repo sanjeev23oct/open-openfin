@@ -99,12 +99,12 @@ export class WebPlatformCore {
   /**
    * Launch an application
    */
-  async launchApplication(appId: string, context?: Context): Promise<any> {
+  async launchApplication(appId: string, options?: { context?: Context; bounds?: { x: number; y: number; width: number; height: number } }): Promise<any> {
     if (!this.windowManager || !this.messageRouter) {
       throw new Error('Platform not initialized');
     }
     
-    console.log('[WebPlatformCore] Launching application:', appId);
+    console.log('[WebPlatformCore] Launching application:', appId, options);
     
     const appManifest = this.appDirectory.get(appId);
     if (!appManifest) {
@@ -116,13 +116,13 @@ export class WebPlatformCore {
     url.searchParams.set('platformOrigin', window.location.origin);
     url.searchParams.set('appId', appId);
     
-    // Create window config
+    // Create window config with bounds override if provided
     const windowConfig: WindowConfig = {
       appId,
       url: url.toString(),
       title: appManifest.title || appManifest.name,
-      position: appManifest.window?.defaultPosition,
-      size: appManifest.window?.defaultSize || { width: 800, height: 600 },
+      position: options?.bounds ? { x: options.bounds.x, y: options.bounds.y } : appManifest.window?.defaultPosition,
+      size: options?.bounds ? { width: options.bounds.width, height: options.bounds.height } : (appManifest.window?.defaultSize || { width: 800, height: 600 }),
       minSize: appManifest.window?.minSize,
       maxSize: appManifest.window?.maxSize,
       resizable: appManifest.window?.resizable !== false,
@@ -138,11 +138,11 @@ export class WebPlatformCore {
     this.messageRouter.registerApplication(appId, windowInstance.iframe);
     
     // Send initial context if provided
-    if (context) {
+    if (options?.context) {
       setTimeout(() => {
         this.messageRouter?.sendToApplication(appId, {
           type: 'broadcast',
-          payload: { context },
+          payload: { context: options.context },
           messageId: 'init',
           timestamp: Date.now()
         });

@@ -60,13 +60,53 @@ export class BrowserWindowManager {
       height: 100%;
     `;
     
-    // Set sandbox attributes
+    // Allow credentials for external apps
+    iframe.setAttribute('allow', 'camera; microphone; geolocation; payment');
+    iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+    
+    // Set sandbox attributes - allow all permissions for external apps
     if (config.sandbox) {
       iframe.sandbox.add(...config.sandbox);
     } else {
-      // Default sandbox
-      iframe.sandbox.add('allow-scripts', 'allow-same-origin', 'allow-forms', 'allow-popups');
+      // Permissive sandbox to allow external apps to load
+      // Note: Some sites like ChatGPT may still block iframe embedding via X-Frame-Options
+      iframe.sandbox.add(
+        'allow-scripts',
+        'allow-same-origin',
+        'allow-forms',
+        'allow-popups',
+        'allow-popups-to-escape-sandbox',
+        'allow-top-navigation-by-user-activation',
+        'allow-modals',
+        'allow-downloads'
+      );
     }
+    
+    // Add error handling for blocked iframes
+    iframe.addEventListener('error', () => {
+      console.error('[BrowserWindowManager] Failed to load:', config.url);
+      const errorDiv = document.createElement('div');
+      errorDiv.style.cssText = `
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        padding: 40px;
+        text-align: center;
+        background: #f5f5f5;
+        color: #666;
+      `;
+      errorDiv.innerHTML = `
+        <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+        <h3 style="margin-bottom: 8px; color: #333;">Cannot Load Application</h3>
+        <p style="margin-bottom: 16px;">This website blocks iframe embedding for security reasons.</p>
+        <a href="${config.url}" target="_blank" style="color: #667eea; text-decoration: none; padding: 8px 16px; border: 1px solid #667eea; border-radius: 6px;">
+          Open in New Tab →
+        </a>
+      `;
+      windowWrapper.appendChild(errorDiv);
+    });
     
     windowWrapper.appendChild(iframe);
     this.container.appendChild(windowWrapper);

@@ -5,10 +5,10 @@
 
 import { WebPlatformCore } from './core/WebPlatformCore';
 import { StorageManager } from './storage/StorageManager';
-import { 
-  detectPlatform, 
-  getCompatibilityReport, 
-  displayCompatibilityWarning 
+import {
+  detectPlatform,
+  getCompatibilityReport,
+  displayCompatibilityWarning
 } from './utils/platformDetection';
 import { fdc3MonitorUI } from './diagnostics/FDC3MonitorUI';
 
@@ -18,56 +18,56 @@ let storage: StorageManager;
 // Initialize platform when DOM is ready
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('[Web Platform] Initializing...');
-  
+
   // Check browser compatibility
   const compatReport = getCompatibilityReport();
   console.log('[Web Platform] Compatibility Report:', compatReport);
-  
+
   if (!compatReport.supported) {
     displayCompatibilityWarning();
     return;
   }
-  
+
   // Detect platform type
   const platformType = detectPlatform();
   console.log('[Web Platform] Platform Type:', platformType);
-  
+
   try {
     // Initialize storage
     storage = new StorageManager();
     await storage.initialize();
-    
+
     // Initialize platform
     platform = new WebPlatformCore(storage);
-    
+
     await platform.initialize({
       appDirectory: '/apps/directory.json',
       theme: 'light',
       enableMultiTab: false,
       performanceMode: false
     });
-    
+
     // Make platform globally accessible
     (window as any).platform = platform;
     (window as any).platformType = platformType;
     (window as any).platformCapabilities = compatReport.capabilities;
-    
+
     // Hide loading indicator
     const loading = document.getElementById('loading');
     if (loading) {
       loading.style.display = 'none';
     }
-    
+
     // Setup UI
     setupUI();
-    
+
     // Auto-launch demo apps in split-screen layout
     await autoLaunchDemoApps();
-    
+
     console.log('[Web Platform] Ready!');
   } catch (error) {
     console.error('[Web Platform] Initialization failed:', error);
-    
+
     // Show error message
     const loading = document.getElementById('loading');
     if (loading) {
@@ -84,28 +84,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 function setupUI() {
   // Populate app grid
   refreshAppGrid();
-  
-  // Setup channel selector
-  document.querySelectorAll('.channel-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const channelId = btn.getAttribute('data-channel');
-      if (channelId) {
-        // Remove active from all
-        document.querySelectorAll('.channel-btn').forEach(b => b.classList.remove('active'));
-        // Add active to clicked
-        btn.classList.add('active');
-        
-        // TODO: Join channel for focused window
-        console.log('Switched to channel:', channelId);
-      }
-    });
-  });
-  
+
   // Setup FDC3 Monitor toggle
   document.getElementById('fdc3-monitor-toggle')?.addEventListener('click', () => {
     fdc3MonitorUI.toggle();
   });
-  
+
   // Setup workspace actions
   document.getElementById('save-workspace')?.addEventListener('click', async () => {
     const name = prompt('Enter workspace name:');
@@ -119,7 +103,7 @@ function setupUI() {
     }
     document.getElementById('workspace-dropdown')?.classList.remove('visible');
   });
-  
+
   document.getElementById('load-workspace')?.addEventListener('click', async () => {
     try {
       const workspaces = await platform.getWorkspaces();
@@ -127,10 +111,10 @@ function setupUI() {
         alert('No saved workspaces');
         return;
       }
-      
+
       const names = workspaces.map((w, i) => `${i + 1}. ${w.name}`).join('\n');
       const choice = prompt(`Select workspace:\n${names}\n\nEnter number:`);
-      
+
       if (choice) {
         const index = parseInt(choice) - 1;
         if (index >= 0 && index < workspaces.length) {
@@ -143,7 +127,7 @@ function setupUI() {
     }
     document.getElementById('workspace-dropdown')?.classList.remove('visible');
   });
-  
+
   // Update dock periodically
   setInterval(updateDock, 1000);
 }
@@ -151,7 +135,7 @@ function setupUI() {
 function refreshAppGrid() {
   const apps = platform.getApplicationDirectory();
   const appGrid = document.getElementById('app-grid');
-  
+
   if (appGrid) {
     appGrid.innerHTML = apps.map(app => `
       <div class="app-card" data-app-id="${app.appId}">
@@ -166,7 +150,7 @@ function refreshAppGrid() {
         <div class="app-description">Add custom web app</div>
       </div>
     `;
-    
+
     // Add click handlers
     appGrid.querySelectorAll('.app-card:not(.app-card-add)').forEach(card => {
       card.addEventListener('click', async () => {
@@ -177,7 +161,7 @@ function refreshAppGrid() {
         }
       });
     });
-    
+
     // Re-attach add button handler
     document.getElementById('add-external-app-btn')?.addEventListener('click', () => {
       showAddExternalAppDialog();
@@ -199,7 +183,7 @@ function showAddExternalAppDialog() {
     justify-content: center;
     z-index: 3000;
   `;
-  
+
   dialog.innerHTML = `
     <div style="background: white; border-radius: 12px; padding: 24px; max-width: 500px; width: 90%;">
       <h2 style="margin: 0 0 20px 0; color: #333;">Add External App</h2>
@@ -238,35 +222,35 @@ function showAddExternalAppDialog() {
       </div>
     </div>
   `;
-  
+
   document.body.appendChild(dialog);
-  
+
   // Focus first input
   setTimeout(() => {
     (document.getElementById('ext-app-name') as HTMLInputElement)?.focus();
   }, 100);
-  
+
   // Cancel button
   dialog.querySelector('#cancel-add-app')?.addEventListener('click', () => {
     dialog.remove();
   });
-  
+
   // Confirm button
   dialog.querySelector('#confirm-add-app')?.addEventListener('click', async () => {
     const name = (document.getElementById('ext-app-name') as HTMLInputElement)?.value;
     const url = (document.getElementById('ext-app-url') as HTMLInputElement)?.value;
     const icon = (document.getElementById('ext-app-icon') as HTMLInputElement)?.value || '🌐';
     const description = (document.getElementById('ext-app-desc') as HTMLInputElement)?.value;
-    
+
     if (!name || !url) {
       alert('Please enter both name and URL');
       return;
     }
-    
+
     try {
       // Validate URL
       new URL(url);
-      
+
       // Add app to platform
       platform.addExternalApp({
         name,
@@ -274,13 +258,13 @@ function showAddExternalAppDialog() {
         icon,
         description
       });
-      
+
       // Refresh app grid
       refreshAppGrid();
-      
+
       // Close dialog
       dialog.remove();
-      
+
       // Show success message
       const notification = document.createElement('div');
       notification.style.cssText = `
@@ -297,12 +281,12 @@ function showAddExternalAppDialog() {
       notification.textContent = `Added "${name}" to app directory`;
       document.body.appendChild(notification);
       setTimeout(() => notification.remove(), 3000);
-      
+
     } catch (error) {
       alert('Invalid URL. Please enter a valid web address.');
     }
   });
-  
+
   // Close on background click
   dialog.addEventListener('click', (e) => {
     if (e.target === dialog) {
@@ -325,40 +309,41 @@ async function launchApp(appId: string) {
 async function autoLaunchDemoApps() {
   try {
     console.log('[Web Platform] Auto-launching demo apps...');
-    
-    // Calculate exact 50/50 split with margins
-    const margin = 20;
-    const gap = 10;
-    const topOffset = 80;
-    const bottomOffset = 100;
-    
-    const availableWidth = window.innerWidth - (2 * margin) - gap;
-    const windowWidth = Math.floor(availableWidth / 2);
-    const windowHeight = window.innerHeight - topOffset - bottomOffset;
-    
-    // Launch Ticker List on the left side (exactly 50%)
+
+    // Simple 50/50 split
+    const topOffset = 20;
+    const bottomOffset = 50;
+
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+
+    // Each window gets exactly 50% of screen width
+    const halfWidth = Math.floor(screenWidth / 2);
+    const windowHeight = screenHeight - topOffset - bottomOffset;
+
+    // Launch Ticker List on LEFT HALF (0% to 50%)
     const tickerListId = await platform.launchApplication('ticker-list', {
       bounds: {
-        x: margin,
+        x: 10,
         y: topOffset,
-        width: windowWidth,
+        width: halfWidth,
         height: windowHeight
       }
     });
-    
+
     // Wait a moment for first app to initialize
     await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Launch Ticker Details on the right side (exactly 50%)
+
+    // Launch Ticker Details on RIGHT HALF (50% to 100%)
     const tickerDetailsId = await platform.launchApplication('ticker-details', {
       bounds: {
-        x: margin + windowWidth + gap,
+        x: halfWidth,
         y: topOffset,
-        width: windowWidth,
+        width: halfWidth,
         height: windowHeight
       }
     });
-    
+
     console.log('[Web Platform] Demo apps launched:', { tickerListId, tickerDetailsId });
     updateDock();
   } catch (error) {
@@ -369,17 +354,17 @@ async function autoLaunchDemoApps() {
 function updateDock() {
   const runningApps = platform.getRunningApplications();
   const dock = document.getElementById('platform-dock');
-  
+
   if (!dock) return;
-  
+
   // Get app directory for icons
   const appDirectory = platform.getApplicationDirectory();
   const appMap = new Map(appDirectory.map(app => [app.appId, app]));
-  
+
   dock.innerHTML = runningApps.map(app => {
     const appInfo = appMap.get(app.appId);
     const icon = appInfo?.icon || '📱';
-    
+
     return `
       <div class="dock-app ${app.state === 'normal' ? 'active' : ''}" data-instance-id="${app.instanceId}">
         <div class="dock-app-icon">${icon}</div>
@@ -387,11 +372,11 @@ function updateDock() {
       </div>
     `;
   }).join('');
-  
+
   // Add click handlers
   dock.querySelectorAll('.dock-app').forEach(dockApp => {
     const instanceId = dockApp.getAttribute('data-instance-id');
-    
+
     // Focus on click
     dockApp.addEventListener('click', (e) => {
       if (!(e.target as HTMLElement).classList.contains('dock-app-close')) {
@@ -407,7 +392,7 @@ function updateDock() {
         }
       }
     });
-    
+
     // Close on X click
     const closeBtn = dockApp.querySelector('.dock-app-close');
     closeBtn?.addEventListener('click', async (e) => {
