@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Browser-based FDC3 Interop Platform">
-  <title>Open OpenFin Web Platform</title>
+  <title>Web Interop Platform</title>
   
   <!-- PWA Meta Tags -->
   <meta name="theme-color" content="#1976d2">
@@ -28,70 +28,80 @@
     
     /* Header */
     #platform-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
       color: white;
-      padding: 12px 20px;
+      padding: 0 24px;
+      height: 56px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
       z-index: 1000;
+      position: relative;
+    }
+    
+    #platform-header::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
     }
     
     .header-left {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 16px;
     }
     
     .platform-title {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 600;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .platform-title::before {
+      content: '⚡';
+      font-size: 20px;
+      filter: drop-shadow(0 0 8px rgba(255,255,255,0.5));
     }
     
     .header-controls {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
     }
     
     .header-btn {
-      background: rgba(255,255,255,0.2);
-      border: none;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.2);
       color: white;
       padding: 8px 16px;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 14px;
-      transition: background 0.2s;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(10px);
     }
     
     .header-btn:hover {
-      background: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.25);
+      border-color: rgba(255,255,255,0.4);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
     
-    /* Channel Selector */
-    .channel-selector {
-      display: flex;
-      gap: 6px;
-    }
-    
-    .channel-btn {
-      width: 32px;
-      height: 32px;
-      border: 2px solid white;
-      border-radius: 50%;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    
-    .channel-btn:hover {
-      transform: scale(1.1);
-    }
-    
-    .channel-btn.active {
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.5);
-      transform: scale(1.15);
+    .header-btn:active {
+      transform: translateY(0);
     }
     
     /* Main Container */
@@ -337,31 +347,30 @@
       border-bottom: none;
     }
   </style>
-  <script type="module" crossorigin src="/assets/main-ClkCcYlp.js"></script>
+  <script type="module" crossorigin src="/assets/main-DpjUsW3L.js"></script>
 </head>
 <body>
   <!-- Header -->
   <div id="platform-header">
     <div class="header-left">
-      <div class="platform-title">🚀 OpenFin Web Platform</div>
-      
-      <!-- Channel Selector -->
-      <div class="channel-selector">
-        <div class="channel-btn" data-channel="red" style="background: #f44336;" title="Red Channel"></div>
-        <div class="channel-btn" data-channel="blue" style="background: #2196F3;" title="Blue Channel"></div>
-        <div class="channel-btn" data-channel="green" style="background: #4CAF50;" title="Green Channel"></div>
-        <div class="channel-btn" data-channel="yellow" style="background: #FFC107;" title="Yellow Channel"></div>
-        <div class="channel-btn" data-channel="orange" style="background: #FF9800;" title="Orange Channel"></div>
-        <div class="channel-btn" data-channel="purple" style="background: #9C27B0;" title="Purple Channel"></div>
-      </div>
+      <div class="platform-title">Web Interop Platform</div>
     </div>
     
     <div class="header-controls">
-      <button class="header-btn" id="launch-apps-btn">📱 Launch Apps</button>
-      <button class="header-btn" id="fdc3-monitor-toggle">🔍 FDC3 Monitor</button>
+      <button class="header-btn" id="launch-apps-btn">
+        <span>📱</span>
+        <span>Launch Apps</span>
+      </button>
+      <button class="header-btn" id="fdc3-monitor-toggle">
+        <span>📊</span>
+        <span>FDC3 Monitor</span>
+      </button>
       
       <div class="workspace-selector">
-        <button class="header-btn" id="workspace-btn">💼 Workspaces</button>
+        <button class="header-btn" id="workspace-btn">
+          <span>💼</span>
+          <span>Workspaces</span>
+        </button>
         <div class="workspace-dropdown" id="workspace-dropdown">
           <div class="workspace-item" id="save-workspace">💾 Save Current</div>
           <div class="workspace-item" id="load-workspace">📂 Load...</div>
