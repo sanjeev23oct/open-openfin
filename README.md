@@ -20,7 +20,7 @@ An open-source interoperability platform available in both **Desktop** (Electron
 - Cross-platform compatibility (Windows, Mac, Linux)
 - Instant deployment and updates
 - Perfect for cloud environments and demos
-- **[Try Live Demo →](https://open-openfin-web.railway.app)** *(Coming Soon)*
+- **[Try Live Demo →]([https://open-openfin-web.railway.app](https://open-openfin-production.up.railway.app/))**
 
 ## 🚀 Features
 
