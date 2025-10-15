@@ -13,6 +13,10 @@ const linking = require('./platform-modules/window-linking');
 const workspace = require('./platform-modules/workspace-manager');
 const SimpleFDC3Bus = require('./platform-modules/fdc3-bus');
 
+// Import production-ready services
+const { MessageBroker } = require('./packages/runtime/dist/packages/runtime/src/services/MessageBroker');
+const { MessagePersistence } = require('./packages/runtime/dist/packages/runtime/src/services/MessagePersistence');
+
 // Setup paths
 const userDataPath = path.join(os.homedir(), '.desktop-interop-platform');
 app.setPath('userData', userDataPath);
@@ -21,12 +25,15 @@ if (!fs.existsSync(userDataPath)) {
 }
 
 const workspacesPath = path.join(userDataPath, 'workspaces.json');
+const iabStoragePath = path.join(userDataPath, '.iab-storage');
 
 // Platform state
 const platform = {
   launcherWindow: null,
   appWindows: new Map(),
-  fdc3Bus: new SimpleFDC3Bus()
+  fdc3Bus: new SimpleFDC3Bus(),
+  messageBroker: null,
+  messagePersistence: null
 };
 
 /**
@@ -230,6 +237,17 @@ function setupIPC() {
     const windowId = BrowserWindow.fromWebContents(event.sender)?.id;
     if (windowId) {
       platform.fdc3Bus.broadcast(windowId, context);
+      
+      // Persist the message
+      if (platform.messagePersistence) {
+        await platform.messagePersistence.persist({
+          id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          timestamp: Date.now(),
+          sender: { uuid: `window-${windowId}`, name: 'FDC3App' },
+          topic: `fdc3.broadcast.${context.type || 'unknown'}`,
+          payload: context
+        });
+      }
     }
   });
 
@@ -302,10 +320,55 @@ function setupIPC() {
 }
 
 /**
+ * Initialize production-ready services
+ */
+function initializeProductionServices() {
+  console.log('[Production] Initializing MessageBroker...');
+  platform.messageBroker = new MessageBroker();
+  
+  console.log('[Production] Initializing MessagePersistence...');
+  platform.messagePersistence = new MessagePersistence({
+    enabled: true,
+    storageDir: iabStoragePath,
+    maxFileSize: 10 * 1024 * 1024, // 10MB
+    maxFiles: 100,
+    flushInterval: 5000 // 5 seconds
+  });
+  
+  // Log statistics every 30 seconds
+  setInterval(() => {
+    const brokerStats = platform.messageBroker.getStats();
+    const persistStats = platform.messagePersistence.getStats();
+    
+    console.log('[Production] Stats:', {
+      broker: {
+        exactRoutes: brokerStats.exactRoutes,
+        wildcardRoutes: brokerStats.wildcardRoutes,
+        queuedMessages: brokerStats.queuedMessages,
+        deadLetterMessages: brokerStats.deadLetterMessages
+      },
+      persistence: {
+        enabled: persistStats.enabled,
+        fileCount: persistStats.fileCount,
+        totalSize: `${(persistStats.totalSize / 1024).toFixed(2)} KB`,
+        bufferedMessages: persistStats.bufferedMessages
+      }
+    });
+  }, 30000);
+  
+  console.log('✅ Production services initialized');
+  console.log(`📁 IAB Storage: ${iabStoragePath}`);
+}
+
+/**
  * Initialize
  */
 app.whenReady().then(() => {
   console.log('🚀 Platform Starting...');
+  
+  // Initialize production services
+  initializeProductionServices();
+  
   setupIPC();
   createLauncher();
   console.log('✅ Platform Ready!');
@@ -314,6 +377,17 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
+  }
+});
+
+app.on('before-quit', async (event) => {
+  // Flush messages before quitting
+  if (platform.messagePersistence) {
+    console.log('[Production] Flushing messages before quit...');
+    event.preventDefault();
+    await platform.messagePersistence.shutdown();
+    console.log('[Production] Shutdown complete');
+    app.exit(0);
   }
 });
 

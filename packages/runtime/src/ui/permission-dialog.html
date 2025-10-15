@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline';">
+  <title>Permission Request</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .dialog {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      max-width: 480px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .dialog-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .dialog-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .dialog-title {
+      flex: 1;
+    }
+
+    .dialog-title h2 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .dialog-title p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .dialog-body {
+      padding: 24px;
+    }
+
+    .app-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .app-icon {
+      width: 40px;
+      height: 40px;
+      background: #667eea;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .app-details {
+      flex: 1;
+    }
+
+    .app-name {
+      font-weight: 600;
+      font-size: 15px;
+      color: #1a1a1a;
+      margin-bottom: 2px;
+    }
+
+    .app-uuid {
+      font-size: 12px;
+      color: #666;
+      font-family: 'Courier New', monospace;
+    }
+
+    .permission-details {
+      margin-bottom: 20px;
+    }
+
+    .permission-type {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .permission-description {
+      font-size: 15px;
+      color: #1a1a1a;
+      line-height: 1.5;
+      padding: 16px;
+      background: #fff8e1;
+      border-left: 4px solid #ffc107;
+      border-radius: 4px;
+    }
+
+    .permission-scope {
+      margin-top: 12px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .permission-scope strong {
+      color: #1a1a1a;
+    }
+
+    .remember-choice {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .remember-choice:hover {
+      background: #e9ecef;
+    }
+
+    .remember-choice input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .remember-choice label {
+      font-size: 14px;
+      color: #1a1a1a;
+      cursor: pointer;
+      flex: 1;
+    }
+
+    .dialog-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-deny {
+      background: #f5f5f5;
+      color: #666;
+    }
+
+    .btn-deny:hover {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .btn-allow {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-allow:hover {
+      background: linear-gradient(135deg, #5568d3 0%, #65408b 100%);
+    }
+
+    .security-notice {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    .security-notice strong {
+      color: #d32f2f;
+    }
+  </style>
+</head>
+<body>
+  <div class="dialog">
+    <div class="dialog-header">
+      <div class="dialog-icon">🔒</div>
+      <div class="dialog-title">
+        <h2>Permission Request</h2>
+        <p>An application is requesting access</p>
+      </div>
+    </div>
+
+    <div class="dialog-body">
+      <div class="app-info">
+        <div class="app-icon" id="appIcon">A</div>
+        <div class="app-details">
+          <div class="app-name" id="appName">Application Name</div>
+          <div class="app-uuid" id="appUuid">app-uuid-here</div>
+        </div>
+      </div>
+
+      <div class="permission-details">
+        <div class="permission-type" id="permissionType">Permission Type</div>
+        <div class="permission-description" id="permissionDescription">
+          This application is requesting permission to access a protected resource.
+        </div>
+        <div class="permission-scope" id="permissionScope" style="display: none;">
+          <strong>Scope:</strong> <span id="scopeValue"></span>
+        </div>
+      </div>
+
+      <div class="remember-choice" onclick="toggleRemember()">
+        <input type="checkbox" id="rememberChoice">
+        <label for="rememberChoice">Remember my choice for this application</label>
+      </div>
+
+      <div class="dialog-actions">
+        <button class="btn btn-deny" onclick="denyPermission()">Deny</button>
+        <button class="btn btn-allow" onclick="allowPermission()">Allow</button>
+      </div>
+
+      <div class="security-notice">
+        <strong>Security Notice:</strong> Only grant permissions to applications you trust. 
+        Granting this permission will allow the application to access the specified resource.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    // Permission descriptions
+    const permissionDescriptions = {
+      messaging: 'Send and receive messages to/from other applications',
+      'window-management': 'Create, move, and manage windows',
+      'file-system': 'Read and write files on your computer',
+      clipboard: 'Access clipboard content',
+      notifications: 'Show desktop notifications',
+      'system-info': 'Access system information',
+      network: 'Make network requests',
+      camera: 'Access your camera',
+      microphone: 'Access your microphone',
+      location: 'Access your location'
+    };
+
+    // Load permission request data
+    ipcRenderer.on('permission-request', (event, data) => {
+      const { appUuid, appName, permission } = data;
+
+      // Update app info
+      document.getElementById('appName').textContent = appName || 'Unknown Application';
+      document.getElementById('appUuid').textContent = appUuid;
+      document.getElementById('appIcon').textContent = (appName || 'A')[0].toUpperCase();
+
+      // Update permission details
+      document.getElementById('permissionType').textContent = 
+        `${permission.type.toUpperCase()} Permission`;
+      
+      const description = permissionDescriptions[permission.type] || 
+        'Access a protected resource';
+      document.getElementById('permissionDescription').textContent = description;
+
+      // Show scope if present
+      if (permission.scope) {
+        document.getElementById('permissionScope').style.display = 'block';
+        document.getElementById('scopeValue').textContent = permission.scope;
+      }
+    });
+
+    function toggleRemember() {
+      const checkbox = document.getElementById('rememberChoice');
+      checkbox.checked = !checkbox.checked;
+    }
+
+    function allowPermission() {
+      const remember = document.getElementById('rememberChoice').checked;
+      ipcRenderer.send('permission-response', { granted: true, remember });
+    }
+
+    function denyPermission() {
+      const remember = document.getElementById('rememberChoice').checked;
+      ipcRenderer.send('permission-response', { granted: false, remember });
+    }
+
+    // Handle window close
+    window.addEventListener('beforeunload', () => {
+      // Default to deny if window is closed
+      ipcRenderer.send('permission-response', { granted: false, remember: false });
+    });
+  </script>
+</body>
+</html>

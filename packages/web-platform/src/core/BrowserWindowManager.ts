@@ -60,26 +60,34 @@ export class BrowserWindowManager {
       height: 100%;
     `;
     
-    // Allow credentials for external apps
-    iframe.setAttribute('allow', 'camera; microphone; geolocation; payment');
-    iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
-    
-    // Set sandbox attributes - allow all permissions for external apps
+    // Set sandbox attributes - SECURE configuration
     if (config.sandbox) {
       iframe.sandbox.add(...config.sandbox);
     } else {
-      // Permissive sandbox to allow external apps to load
-      // Note: Some sites like ChatGPT may still block iframe embedding via X-Frame-Options
+      // SECURITY FIX: Removed dangerous 'allow-same-origin' + 'allow-scripts' combination
+      // This combination allows scripts to access parent window and other iframes
+      // 
+      // For trusted internal apps: use separate origin or postMessage API
+      // For external apps: they run in isolated sandbox
       iframe.sandbox.add(
         'allow-scripts',
-        'allow-same-origin',
+        // REMOVED: 'allow-same-origin' - dangerous with allow-scripts!
         'allow-forms',
         'allow-popups',
-        'allow-popups-to-escape-sandbox',
+        // REMOVED: 'allow-popups-to-escape-sandbox' - breaks isolation!
         'allow-top-navigation-by-user-activation',
-        'allow-modals',
-        'allow-downloads'
+        'allow-modals'
+        // REMOVED: 'allow-downloads' - security risk
       );
+    }
+    
+    // Feature policy for additional security
+    iframe.setAttribute('allow', 'camera; microphone; geolocation; payment');
+    iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+    
+    // Add CSP via meta tag injection (for apps we control)
+    if (!config.sandbox || config.sandbox.length === 0) {
+      iframe.setAttribute('csp', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';");
     }
     
     // Add error handling for blocked iframes

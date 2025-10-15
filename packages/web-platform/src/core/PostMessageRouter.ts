@@ -21,12 +21,25 @@ export class PostMessageRouter {
   private channelManager: ChannelManager;
   private intentResolver: IntentResolver;
   private contextRouter: ContextRouter;
-  private trustedOrigins: Set<string> = new Set(['*']); // TODO: Configure properly
+  private trustedOrigins: Set<string> = new Set();
+  private appOrigins: Map<string, string> = new Map(); // appId -> origin
   
-  constructor() {
+  constructor(trustedOrigins?: string[]) {
     this.channelManager = new ChannelManager();
     this.intentResolver = new IntentResolver();
     this.contextRouter = new ContextRouter();
+    
+    // SECURITY FIX: No more wildcard origins!
+    // Always trust same origin
+    this.trustedOrigins.add(window.location.origin);
+    
+    // Add configured trusted origins
+    if (trustedOrigins) {
+      trustedOrigins.forEach(origin => this.trustedOrigins.add(origin));
+    }
+    
+    console.log('[PostMessageRouter] Trusted origins:', Array.from(this.trustedOrigins));
+    
     this.setupMessageListener();
   }
   
@@ -37,6 +50,12 @@ export class PostMessageRouter {
   }
   
   private handleMessage(event: MessageEvent): void {
+    // SECURITY: Validate origin first
+    if (!this.isOriginTrusted(event.origin)) {
+      console.warn('[PostMessageRouter] Rejected message from untrusted origin:', event.origin);
+      return;
+    }
+    
     // Validate message structure
     if (!event.data || typeof event.data !== 'object') {
       return;
@@ -102,10 +121,12 @@ export class PostMessageRouter {
       if (appId === excludeAppId) continue;
       
       if (iframe.contentWindow) {
+        // SECURITY: Send to specific origin
+        const targetOrigin = this.appOrigins.get(appId) || window.location.origin;
         iframe.contentWindow.postMessage({
           type: 'fdc3.context',
           context
-        }, '*');
+        }, targetOrigin);
         
         // Log to monitor
         fdc3Monitor.logMessage({
@@ -225,13 +246,15 @@ export class PostMessageRouter {
       // Send context to app
       const iframe = this.registeredApps.get(appId);
       if (iframe && iframe.contentWindow) {
+        // SECURITY: Send to specific origin
+        const targetOrigin = this.appOrigins.get(appId) || window.location.origin;
         iframe.contentWindow.postMessage({
           type: 'context',
           payload: {
             listenerId,
             context
           }
-        }, '*');
+        }, targetOrigin);
       }
     });
     
@@ -262,10 +285,12 @@ export class PostMessageRouter {
         // Send to app
         const iframe = this.registeredApps.get(appId);
         if (iframe && iframe.contentWindow) {
+          // SECURITY: Send to specific origin
+          const targetOrigin = this.appOrigins.get(appId) || window.location.origin;
           iframe.contentWindow.postMessage({
             type: 'context',
             payload: { context }
-          }, '*');
+          }, targetOrigin);
         }
       });
     }
@@ -277,30 +302,105 @@ export class PostMessageRouter {
   }
   
   private sendResponse(target: Window, messageId: string, payload: any): void {
+    // SECURITY: Send to specific origin, not wildcard
+    const targetOrigin = this.getTargetOrigin(target);
     target.postMessage({
       type: 'response',
       messageId,
       payload
-    }, '*');
+    }, targetOrigin);
   }
   
   private sendError(target: Window, messageId: string, error: string): void {
+    // SECURITY: Send to specific origin, not wildcard
+    const targetOrigin = this.getTargetOrigin(target);
     target.postMessage({
       type: 'response',
       messageId,
       error
-    }, '*');
+    }, targetOrigin);
   }
   
-  registerApplication(appId: string, iframe: HTMLIFrameElement): void {
+  /**
+   * Check if origin is trusted
+   */
+  private isOriginTrusted(origin: string): boolean {
+    // Check against trusted origins list
+    if (this.trustedOrigins.has(origin)) {
+      return true;
+    }
+    
+    // Check if it's a registered app's origin
+    for (const appOrigin of this.appOrigins.values()) {
+      if (appOrigin === origin) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+  
+  /**
+   * Get target origin for postMessage
+   */
+  private getTargetOrigin(target: Window): string {
+    // Find the iframe for this window
+    for (const [appId, iframe] of this.registeredApps.entries()) {
+      if (iframe.contentWindow === target) {
+        const appOrigin = this.appOrigins.get(appId);
+        if (appOrigin) {
+          return appOrigin;
+        }
+      }
+    }
+    
+    // Fallback to same origin
+    return window.location.origin;
+  }
+  
+  /**
+   * Add trusted origin
+   */
+  addTrustedOrigin(origin: string): void {
+    this.trustedOrigins.add(origin);
+    console.log('[PostMessageRouter] Added trusted origin:', origin);
+  }
+  
+  /**
+   * Remove trusted origin
+   */
+  removeTrustedOrigin(origin: string): void {
+    this.trustedOrigins.delete(origin);
+    console.log('[PostMessageRouter] Removed trusted origin:', origin);
+  }
+  
+  /**
+   * Get list of trusted origins
+   */
+  getTrustedOrigins(): string[] {
+    return Array.from(this.trustedOrigins);
+  }
+  
+  registerApplication(appId: string, iframe: HTMLIFrameElement, appOrigin?: string): void {
     console.log('[PostMessageRouter] Registering app:', appId);
     this.registeredApps.set(appId, iframe);
+    
+    // Track app origin for security
+    if (appOrigin) {
+      this.appOrigins.set(appId, appOrigin);
+      // Auto-trust app origin
+      this.addTrustedOrigin(appOrigin);
+    } else {
+      // Default to same origin
+      this.appOrigins.set(appId, window.location.origin);
+    }
   }
   
   unregisterApplication(appId: string): void {
     console.log('[PostMessageRouter] Unregistering app:', appId);
     this.registeredApps.delete(appId);
     this.appChannels.delete(appId);
+    this.appOrigins.delete(appId);
     this.contextRouter.unsubscribeApp(appId);
   }
   
@@ -311,7 +411,9 @@ export class PostMessageRouter {
       return;
     }
     
-    iframe.contentWindow.postMessage(message, '*');
+    // SECURITY: Send to specific origin
+    const targetOrigin = this.appOrigins.get(appId) || window.location.origin;
+    iframe.contentWindow.postMessage(message, targetOrigin);
   }
   
   broadcast(message: BridgeMessage, excludeAppId?: string): void {
@@ -319,7 +421,9 @@ export class PostMessageRouter {
       if (appId === excludeAppId) continue;
       
       if (iframe.contentWindow) {
-        iframe.contentWindow.postMessage(message, '*');
+        // SECURITY: Send to specific origin
+        const targetOrigin = this.appOrigins.get(appId) || window.location.origin;
+        iframe.contentWindow.postMessage(message, targetOrigin);
       }
     }
   }
