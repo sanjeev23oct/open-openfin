@@ -303,9 +303,6 @@ sequenceDiagram
     Note over MP: Auto-flush every 5s
     MP->>MP: flush to disk
     MP->>MP: rotate if >10MB
-
-    style MB fill:#90EE90
-    style MP fill:#90EE90
 ```
 
 ### Message Routing Performance
@@ -397,10 +394,6 @@ sequenceDiagram
     A1->>FDC3: select ChartApp
     FDC3->>IR: launch app
     IR->>CR: deliver context
-
-    style CM fill:#FFD700
-    style IR fill:#FFD700
-    style CR fill:#FFD700
 ```
 
 ---
@@ -580,8 +573,6 @@ sequenceDiagram
     MP->>DISK: read messages
     DISK->>MP: return messages
     MP->>APP: return filtered messages
-
-    style MP fill:#90EE90
 ```
 
 ---
