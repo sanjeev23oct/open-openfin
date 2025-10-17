@@ -21,7 +21,8 @@
   - Implement cleanup of old files
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [x] 3. Enhance InterApplicationBus
+- [ ] 3. Enhance InterApplicationBus
+
 
 
   - Integrate MessageBroker
@@ -137,6 +138,9 @@
 
   - [ ] 8.2 Add origin validation
     - Create origin whitelist configuration
+
+
+
     - Validate postMessage origins
     - Reject messages from untrusted origins
     - _Requirements: 5.2, 5.3_
